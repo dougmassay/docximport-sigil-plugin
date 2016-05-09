@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="generator" content="ReText 4.1.2">
+<title>README</title>
+</head>
+<body>
+<h1>DOCXImport (A Sigil Plugin)</h1>
+<p>Import DOCX documents into Sigil as epubs</p>
+<p>A Sigil plugin based on the Python <a href="https://github.com/mwilliamson/python-mammoth">Mammoth module</a>.</p>
+<h1>Links</h1>
+<ul>
+<li>Sigil website is at <a href="http://sigil-ebook.com">http://sigil-ebook.com</a></li>
+<li>Sigil support forums are at <a href="http://www.mobileread.com/forums/forumdisplay.php?f=203">http://www.mobileread.com/forums/forumdisplay.php?f=203</a></li>
+<li>DOCXImport plugin MobileRead support thread: <a href="http://www.mobileread.com/forums/showthread.php?t=">http://www.mobileread.com/forums/showthread.php?t=</a></li>
+</ul>
+<h1>Building</h1>
+<p>First, clone the repo:</p>
+<pre><code>$ git clone https://github.com/dougmassay/docximport-sigil-plugin.git
+</code></pre>
+<p>To create the plugin zip file, run the buildplugin.py script (root of the repository tree) with Python (2 or 3)</p>
+<pre><code>$python buildplugin.py
+</code></pre>
+<p>This will create the DOCXImport_vX.X.X.zip file that can then be installed into Sigil's plugin manager.</p>
+<h1>Using DOCXImport</h1>
+<p>If you're using Sigil v0.9.0 or later on OSX or Windows, all dependencies should already be met so long as you're using the bundled Python interpreter (default).</p>
+<p>Linux users will have to make sure that the Tk graphical python module is present if it's not already.  On Debian-based flavors this can be done with "sudo apt-get install python-tk" for python 2.7 or "sudo apt-get install python3-tk" for Python 3.4.</p>
+<ul>
+<li><strong>Note:</strong> Do not rename any Sigil plugin zip files before attempting to install them</li>
+</ul>
+<p>This plugin will work with either Python 3.4+ or Python 2.7+ (defaults to 3.x if both are present).
+The absolute minimum version of Sigil required is v0.8.3 (Python must be installed separately prior to v0.9.0)</p>
+<p>Configurable preferences (available after first run in the plugin's corresponding json prefs file) are:</p>
+<ul>
+<li>
+<p><strong>epub_version</strong> : a string value that determines which epub version to create (defaults to: "2.0"). Choices are "2.0" or "3.0"</p>
+</li>
+<li>
+<p><strong>check_for_updates</strong> : a true or false (boolean) value (defaults to true). Check online for newer versions of this plugin.</p>
+</li>
+</ul>
+<p>Get more help at the DOCXImport plugin <a href="http://www.mobileread.com/forums/showthread.php?t=247087">MobileRead support thread:</a></p>
+<h1>Contributing / Modifying</h1>
+<p>From here on out, a proficiency with developing / creating Sigil plugins is assumed.
+If you need a crash-course, an introduction to creating Sigil plugins is available at
+http://www.mobileread.com/forums/showthread.php?t=251452.</p>
+<p>The core plugin files (this is where most contributors will spend their time) are:</p>
+<pre><code>&gt; mmth (modified Mammoth module)
+&gt; cbbl (modified Cobble module)
+&gt; parsim (modified Parsimonious module)
+&gt; plugin.py
+&gt; plugin.xml
+&gt; quickepub.py
+&gt; updatecheck.py
+&gt; utilities.py
+</code></pre>
+<p>Files used for building/maintaining the plugin:</p>
+<pre><code>&gt; buildplugin.py  -- this is used to build the plugin.
+&gt; setup.cfg -- used for flake8 style checking. Use it to see if your code complies.
+&gt; checkversion.xml -- used by automatic update checking (not yet implemented).
+</code></pre>
+<p>Feel free to fork the repository and submit pull requests (or just use it privately to experiment).</p>
+<h1>License Information</h1>
+<h3>DOCXImport (this plugin)</h3>
+<pre><code>Released under the GPLv3.
+</code></pre>
+<h3><a href="https://github.com/mwilliamson/python-mammoth">Mammoth</a> - "Convert Word documents to simple and clean HTML"</h3>
+<p>Released under the 2-Clause BSD License</p>
+<p>Copyright (c) 2013, Michael Williamson
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met: </p>
+<ol>
+<li>Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer. </li>
+<li>Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution. </li>
+</ol>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<h3><a href="https://github.com/mwilliamson/python-cobble">Cobble</a> - "Create Python data objects"</h3>
+<p>Released under the 2-Clause BSD License</p>
+<p>Copyright (c) 2013, Michael Williamson
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met: </p>
+<ol>
+<li>Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer. </li>
+<li>Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution. </li>
+</ol>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<h3><a href="https://github.com/erikrose/parsimonious">Parsimonious</a> - "The fastest pure-Python PEG parser I can muster"</h3>
+<p>Released under the terms of the <a href="http://opensource.org/licenses/mit-license.php">MIT license</a></p>
+<p>Copyright (c) 2012 Erik Rose</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>
+</body>
+</html>

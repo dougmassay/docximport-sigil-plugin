@@ -1,0 +1,107 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# vim:ts=4:sw=4:softtabstop=4:smarttab:expandtab
+
+from __future__ import (unicode_literals, division, absolute_import,
+                        print_function)
+
+import os
+import sys
+import re
+import shutil
+import inspect
+import zipfile
+
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+PLUGIN_NAME = 'DOCXImport'
+TEMP_DIR = os.path.join(SCRIPT_DIR, PLUGIN_NAME)
+
+PLUGIN_FILES = ['mmth',
+            'cbbl',
+            'parsim',
+            'plugin.py',
+            'plugin.xml',
+            'quickepub.py',
+            'updatecheck.py',
+            'utilities.py']
+
+def findVersion():
+    _version_pattern = re.compile(r'<version>([^<]*)</version>')
+    with open('plugin.xml', 'r') as fd:
+        data = fd.read()
+    match = re.search(_version_pattern, data)
+    if match is not None:
+        return '{}'.format(match.group(1))
+    return '0.X.X'
+
+# Find version info from plugin.xml and build zip file name from it
+VERS_INFO =  findVersion()
+ARCHIVE_NAME = os.path.join(SCRIPT_DIR, '{}_v{}.zip'.format(PLUGIN_NAME, VERS_INFO))
+
+
+# recursive zip creation support routine
+def zipUpDir(myzip, tdir, localname):
+    currentdir = tdir
+    if localname != "":
+        currentdir = os.path.join(currentdir,localname)
+    dir_contents = os.listdir(currentdir)
+    for entry in dir_contents:
+        afilename = entry
+        localfilePath = os.path.join(localname, afilename)
+        realfilePath = os.path.join(currentdir, entry)
+        if os.path.isfile(realfilePath):
+            myzip.write(realfilePath, localfilePath, zipfile.ZIP_DEFLATED)
+        elif os.path.isdir(realfilePath):
+            zipUpDir(myzip, tdir, localfilePath)
+
+def removePreviousTmp(rmzip=False):
+    # Remove temp folder and contents if it exists
+    if os.path.exists(TEMP_DIR) and os.path.isdir(TEMP_DIR):
+        shutil.rmtree(TEMP_DIR)
+
+    if rmzip:  # Remove zip file if indicated.
+        print ('Removing any current zip file ...')
+        if os.path.exists(ARCHIVE_NAME):
+            os.remove(ARCHIVE_NAME)
+
+def ignore_in_dirs(base, items, ignored_dirs=None):
+    ans = []
+    if ignored_dirs is None:
+        ignored_dirs = {'.git', '__pycache__'}
+    for name in items:
+        path = os.path.join(base, name)
+        if os.path.isdir(path):
+            if name in ignored_dirs:
+                ans.append(name)
+        else:
+            if name.rpartition('.')[-1] in ('pyc', 'pyo'):
+                ans.append(name)
+    return ans
+
+if __name__ == "__main__":
+    print('Removing any previous build leftovers ...')
+    removePreviousTmp(rmzip=True)
+
+    print ('Creating temp {} directory ...'.format(PLUGIN_NAME))
+    os.mkdir(TEMP_DIR)
+
+    print ('Copying everything to temp {} directory ...'.format(PLUGIN_NAME))
+    for entry in PLUGIN_FILES:
+        entry_path = os.path.join(SCRIPT_DIR, entry)
+        if os.path.exists(entry_path) and os.path.isdir(entry_path):
+            shutil.copytree(entry_path, os.path.join(TEMP_DIR, entry), ignore=ignore_in_dirs)
+        elif os.path.exists(entry_path) and os.path.isfile(entry_path):
+            shutil.copy2(entry_path, os.path.join(TEMP_DIR, entry))
+        else:
+            sys.exit('Couldn\'t copy necessary plugin files!')
+
+    print ('Creating {} ...'.format(os.path.basename(ARCHIVE_NAME)))
+    outzip = zipfile.ZipFile(ARCHIVE_NAME, 'w')
+    zipUpDir(outzip, SCRIPT_DIR, os.path.basename(TEMP_DIR))
+    outzip.close()
+
+    print ('Plugin successfully created!')
+
+    print('Removing temp build directory ...')
+    removePreviousTmp()

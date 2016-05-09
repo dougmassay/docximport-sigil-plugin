@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <name>DOCXImport</name>
+  <type>input</type>
+  <author>DiapDealer</author>
+  <description>Import DOCX files for editing in Sigil</description>
+  <engine>python3.4,python2.7</engine>
+  <version>0.1.0</version>
+  <oslist>osx,unx,win</oslist>
+  <autostart>true</autostart>
+  <autoclose>true</autoclose>
+</plugin>
