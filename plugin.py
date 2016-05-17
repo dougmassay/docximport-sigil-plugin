@@ -6,17 +6,17 @@ from __future__ import unicode_literals, division, absolute_import, print_functi
 import os
 import sys
 import shutil
+import webbrowser
 from time import sleep
 from contextlib import contextmanager
 from datetime import datetime, timedelta
-
 
 from compatibility_utils import PY2, unicode_str
 from unipath import pathof
 
 import mmth
 from utilities import expanduser, file_open
-from updatecheck import UpdateChecker
+from updatecheck import UpdateChecker, DOWNLOAD_PAGE
 from quickepub import QuickEpub
 
 
@@ -31,6 +31,7 @@ else:
 
 
 _DEBUG_ = False
+
 prefs = {}
 img_map = None
 
@@ -82,7 +83,9 @@ def update_msgbox(title, msg):
     localRoot.withdraw()
     localRoot.option_add('*font', 'Helvetica -12')
     localRoot.quit()
-    return tkinter_msgbox.showinfo(title, msg)
+    if tkinter_msgbox.askyesno(title, msg):
+        webbrowser.open_new_tab(DOWNLOAD_PAGE)
+    return
 
 def run(bk):
     global prefs
@@ -110,7 +113,7 @@ def run(bk):
             prefs['last_online_version'] = online_version
         if update_available:
             title = 'Plugin Update Available'
-            msg = 'Version {} of the {} plugin is now available.'.format(online_version, bk._w.plugin_name)
+            msg = 'Version {} of the {} plugin is now available. Go to download page?'.format(online_version, bk._w.plugin_name)
             update_msgbox(title, msg)
 
     if _DEBUG_:

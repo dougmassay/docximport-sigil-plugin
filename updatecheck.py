@@ -10,6 +10,7 @@ import sys
 import socket
 from datetime import datetime, timedelta
 
+DOWNLOAD_PAGE = 'https://github.com/dougmassay/docximport-sigil-plugin/releases'
 url = 'https://raw.githubusercontent.com/dougmassay/docximport-sigil-plugin/master/checkversion.xml'
 delta = 12
 
