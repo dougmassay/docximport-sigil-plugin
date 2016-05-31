@@ -44,7 +44,7 @@ def launch_gui(bk, prefs):
     root.withdraw()
     root.title('')
     root.resizable(True, True)
-    root.minsize(420, 325)
+    root.minsize(420, 400)
     root.option_add('*font', 'Arial -12')
     img = tkinter.Image('photo', file=os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'images/icon.png'))
     root.tk.call('wm','iconphoto',root._w,img)
@@ -70,7 +70,7 @@ class guiMain(tkinter.Frame):
             self.parent.update_idletasks()
             w = self.parent.winfo_screenwidth()
             h = self.parent.winfo_screenheight()
-            rootsize = (420, 325)
+            rootsize = (420, 400)
             x = w/2 - rootsize[0]/2
             y = h/2 - rootsize[1]/2
             self.prefs['windowGeometry'] = ('%dx%d+%d+%d' % (rootsize + (x, y)))
@@ -223,6 +223,7 @@ class guiMain(tkinter.Frame):
 
     def cmdDo(self):
         global _DETAILS
+        self.prefs['windowGeometry'] = self.parent.geometry()
         self.prefs['check_for_updates'] = self.use_updates.get()
         self.prefs['epub_version'] = self.epubType.get()
         self.prefs['debug'] = self.debug.get()
@@ -254,6 +255,10 @@ class guiMain(tkinter.Frame):
 
     def cmdCancel(self):
         '''Close aborting any changes'''
+        self.prefs['windowGeometry'] = self.parent.geometry()
+        self.prefs['check_for_updates'] = self.use_updates.get()
+        self.prefs['debug'] = self.debug.get()
+        self.bk.savePrefs(self.prefs)
         self.quitApp()
 
     def quitApp(self):
