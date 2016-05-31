@@ -52,12 +52,13 @@ The core plugin files (this is where most contributors will spend their time) ar
     > mmth (modified Mammoth module)
     > cbbl (modified Cobble module)
     > parsim (modified Parsimonious module)
+    > images (icon)
+    > dialogs.py
+    > htmlformat.py
     > plugin.py
     > plugin.xml
     > quickepub.py
     > updatecheck.py
-    > utilities.py
-
 
 Files used for building/maintaining the plugin:
 
