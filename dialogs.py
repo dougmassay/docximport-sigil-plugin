@@ -282,7 +282,11 @@ class guiMain(tkinter.Frame):
         return (False, online_version)
 
     def get_update(self):
-        webbrowser.open_new_tab(DOWNLOAD_PAGE)
+        url = DOWNLOAD_PAGE
+        if self.update:
+            latest = '/tag/v{}'.format(self.newversion)
+            url = url + latest
+        webbrowser.open_new_tab(url)
 
 
 def main():
