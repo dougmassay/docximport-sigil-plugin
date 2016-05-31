@@ -18,11 +18,11 @@ Building
 First, clone the repo:
 
     $ git clone https://github.com/dougmassay/docximport-sigil-plugin.git
-    
+
 To create the plugin zip file, run the buildplugin.py script (root of the repository tree) with Python (2 or 3)
 
     $python buildplugin.py
-    
+
 This will create the DOCXImport_vX.X.X.zip file that can then be installed into Sigil's plugin manager.
 
 Using DOCXImport
@@ -36,16 +36,11 @@ Linux users will have to make sure that the Tk graphical python module is presen
 This plugin will work with either Python 3.4+ or Python 2.7+ (defaults to 3.x if both are present).
 The absolute minimum version of Sigil required is v0.8.3 (Python must be installed separately prior to v0.9.0)
 
-Configurable preferences (available after first run in the plugin's corresponding json prefs file) are:
+Get more help at the DOCXImport plugin [MobileRead support thread.](http://www.mobileread.com/forums/showthread.php?t=247087)
 
-* **epub_version** : a string value that determines which epub version to create (defaults to: "2.0"). Choices are "2.0" or "3.0"
-
-* **check_for_updates** : a true or false (boolean) value (defaults to true). Check online for newer versions of this plugin.
+A sample docx file (along with a sample mammoth style map and css file) are available in the samples folder of the github reppository. For more help with custom style maps, check out the "Writing Style Maps" section of the [Mammoth README.](https://github.com/mwilliamson/python-mammoth#writing-style-maps)
 
 
-Get more help at the DOCXImport plugin [MobileRead support thread:](http://www.mobileread.com/forums/showthread.php?t=247087)
-
-    
 Contributing / Modifying
 ============
 From here on out, a proficiency with developing / creating Sigil plugins is assumed.
@@ -63,7 +58,7 @@ The core plugin files (this is where most contributors will spend their time) ar
     > updatecheck.py
     > utilities.py
 
-    
+
 Files used for building/maintaining the plugin:
 
     > buildplugin.py  -- this is used to build the plugin.

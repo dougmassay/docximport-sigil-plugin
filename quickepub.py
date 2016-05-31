@@ -7,7 +7,6 @@ import os
 import textwrap
 from uuid import uuid4
 
-from utilities import file_open
 from epub_utils import epub_zip_up_book_contents
 
 CONTAINER = textwrap.dedent('''<?xml version="1.0" encoding="UTF-8"?>
@@ -28,6 +27,7 @@ OPF = textwrap.dedent('''<?xml version="1.0" encoding="utf-8"?>
     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
     <item id="Section0001.xhtml" href="Section0001.xhtml" media-type="application/xhtml+xml"/>
     {2}
+    {3}
   </manifest>
   <spine toc="ncx">
     <itemref  idref="Section0001.xhtml"/>
@@ -60,11 +60,11 @@ NCX = textwrap.dedent('''<?xml version="1.0" encoding="utf-8"?>
 </ncx>''')
 
 IMG = '<item id="{0}" href="Images/{0}" media-type="{1}"/>'
-
+CSS = '<item id="css" href="stylesheet.css" media-type="text/css"/>'
 
 class QuickEpub(object):
-    def __init__(self, temp_dir, outdir, htmlfile, version, img_map):
-        self.outdir, self.htmlfile, self.version, self.img_map = outdir, htmlfile, version, img_map
+    def __init__(self, temp_dir, outdir, htmlfile, version, img_map, cssfile=None):
+        self.outdir, self.htmlfile, self.version, self.img_map, self.cssfile = outdir, htmlfile, version, img_map, cssfile
         self.uid = uuid4()
         self.epubname = os.path.join(temp_dir,'new.epub')
         self.img_items = self.manifest_images()
@@ -79,19 +79,22 @@ class QuickEpub(object):
 
         containerdata = CONTAINER.format(os.path.basename(self.opffile))
         fileout = os.path.join(metainf,'container.xml')
-        file_open(fileout,'wb').write(containerdata.encode('utf-8'))
+        open(fileout,'wb').write(containerdata.encode('utf-8'))
         return metainf
 
     def make_opf(self):
         opffile = os.path.join(self.outdir,'content.opf')
-        opfdata = OPF.format(self.version, self.uid, self.img_items)
-        file_open(opffile,'wb').write(opfdata.encode('utf-8'))
+        cssmanifest = ''
+        if self.cssfile is not None:
+            cssmanifest = CSS
+        opfdata = OPF.format(self.version, self.uid, self.img_items, cssmanifest)
+        open(opffile,'wb').write(opfdata.encode('utf-8'))
         return opffile
 
     def make_ncx(self):
         ncxfile = os.path.join(self.outdir,'toc.ncx')
         ncxdata = NCX.format(self.uid)
-        file_open(ncxfile,'wb').write(ncxdata.encode('utf-8'))
+        open(ncxfile,'wb').write(ncxdata.encode('utf-8'))
         return ncxfile
 
     def manifest_images(self):
@@ -107,7 +110,7 @@ class QuickEpub(object):
         # add the mimetype file uncompressed
         mimetype = 'application/epub+zip'
         fileout = os.path.join(self.outdir,'mimetype')
-        file_open(fileout,'wb').write(mimetype.encode('utf-8'))
+        open(fileout,'wb').write(mimetype.encode('utf-8'))
 
         epub_zip_up_book_contents(self.outdir, self.epubname)
 

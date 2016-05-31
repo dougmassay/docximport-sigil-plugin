@@ -22,11 +22,11 @@ def main():
             convert_image = None
             output_path = args.output
         else:
-            convert_image = mammoth.images.img_element(ImageWriter(args.output_dir))
+            convert_image = mmth.images.img_element(ImageWriter(args.output_dir))
             output_filename = "{0}.html".format(os.path.basename(args.path).rpartition(".")[0])
             output_path = os.path.join(args.output_dir, output_filename)
         
-        result = mammoth.convert(
+        result = mmth.convert(
             docx_fileobj,
             style_map=style_map,
             convert_image=convert_image,

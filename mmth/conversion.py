@@ -153,10 +153,11 @@ class _DocumentConverter(documents.ElementVisitor):
     
     
     def visit_table_cell(self, table_cell):
-        if table_cell.colspan == 1:
-            attributes = {}
-        else:
-            attributes = {"colspan": str(table_cell.colspan)}
+        attributes = {}
+        if table_cell.colspan != 1:
+            attributes["colspan"] = str(table_cell.colspan)
+        if table_cell.rowspan != 1:
+            attributes["rowspan"] = str(table_cell.rowspan)
         nodes = [html.force_write] + self._visit_all(table_cell.children)
         return [
             html.element("td", attributes, nodes)
@@ -166,16 +167,18 @@ class _DocumentConverter(documents.ElementVisitor):
     def visit_line_break(self, line_break):
         return [html.self_closing_element("br")]
     
+
     def visit_note_reference(self, note_reference):
         self._note_references.append(note_reference);
         note_number = len(self._note_references)
         return [
-            html.element("sup", {}, [
-                html.element("a", {
-                    "href": "#" + self._note_html_id(note_reference),
-                    "id": self._note_ref_html_id(note_reference),
-                }, [html.text("[{0}]".format(note_number))])
-            ])
+            #html.element("sup", {}, [
+            html.element("a", {
+                "href": "#" + self._note_html_id(note_reference),
+                "id": self._note_ref_html_id(note_reference),
+                "class": "note",
+            }, [html.text("[{0}]".format(note_number))])
+            #])
         ]
     
     def visit_note(self, note):

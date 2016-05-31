@@ -6,28 +6,13 @@ from __future__ import unicode_literals, division, absolute_import, print_functi
 import os
 import sys
 import shutil
-import webbrowser
-from time import sleep
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 
-from compatibility_utils import PY2, unicode_str
-from unipath import pathof
-
 import mmth
-from utilities import expanduser, file_open
-from updatecheck import UpdateChecker, DOWNLOAD_PAGE
 from quickepub import QuickEpub
-
-
-if PY2:
-    from Tkinter import Tk
-    import tkFileDialog as tkinter_filedialog
-    import tkMessageBox as tkinter_msgbox
-else:
-    from tkinter import Tk
-    import tkinter.filedialog as tkinter_filedialog
-    import tkinter.messagebox as tkinter_msgbox
+from dialogs import launch_gui
+from htmlformat import build_html
 
 
 _DEBUG_ = False
@@ -41,15 +26,17 @@ class ImageWriter(object):
         img_map = {}
         self._output_dir = output_dir
         self._image_number = 1
-        
+
     def __call__(self, element):
         global img_map
         extension = element.content_type.partition("/")[2]
         image_filename = 'img{0}.{1}'.format(self._image_number, extension)
+        if _DEBUG_:
+            print('Processing {}'.format(image_filename))
         with open(os.path.join(self._output_dir, image_filename), 'wb') as image_dest:
             with element.open() as image_source:
                 shutil.copyfileobj(image_source, image_dest)
-        
+
         self._image_number += 1
         image_src = '../Images/{0}'.format(image_filename)
         img_map[image_filename] = element.content_type
@@ -64,37 +51,16 @@ def make_temp_directory():
     yield temp_dir
     shutil.rmtree(temp_dir)
 
-def fileChooser():
-    localRoot = Tk()
-    localRoot.withdraw()
-    file_opt = {}
-    file_opt['parent'] = None
-    file_opt['title']= 'Select DOCX file'
-    file_opt['defaultextension'] = '.docx'
-    # retrieve the initialdir from JSON prefs
-    file_opt['initialdir'] = unicode_str(prefs['use_file_path'], 'utf-8')
-    file_opt['multiple'] = False
-    file_opt['filetypes'] = [('DOCX Files', ('.docx'))]
-    localRoot.quit()
-    return tkinter_filedialog.askopenfilename(**file_opt)
-
-def update_msgbox(title, msg):
-    localRoot = Tk()
-    localRoot.withdraw()
-    localRoot.option_add('*font', 'Helvetica -12')
-    localRoot.quit()
-    if tkinter_msgbox.askyesno(title, msg):
-        webbrowser.open_new_tab(DOWNLOAD_PAGE)
-    return
-
 def run(bk):
     global prefs
     global img_map
+    global _DEBUG_
+
     prefs = bk.getPrefs()
 
     # set default preference values
     if 'use_file_path' not in prefs:
-        prefs['use_file_path'] = expanduser('~')
+        prefs['use_file_path'] = os.path.expanduser('~')
     if 'epub_version' not in prefs:
         prefs['epub_version'] = '2.0'
     if 'check_for_updates' not in prefs:
@@ -104,63 +70,106 @@ def run(bk):
     if 'last_online_version' not in prefs:
         prefs['last_online_version'] = '0.1.0'
 
-    if prefs['check_for_updates']:
-        chk = UpdateChecker(prefs['last_time_checked'], prefs['last_online_version'], bk._w)
-        update_available, online_version, time = chk.update_info()
-        # update preferences with latest date/time/version
-        prefs['last_time_checked'] = time
-        if online_version is not None:
-            prefs['last_online_version'] = online_version
-        if update_available:
-            title = 'Plugin Update Available'
-            msg = 'Version {} of the {} plugin is now available. Go to download page?'.format(online_version, bk._w.plugin_name)
-            update_msgbox(title, msg)
+    if 'windowGeometry' not in prefs:
+        prefs['windowGeometry'] = None
+    if 'lastDir' not in prefs:
+        prefs['lastDir'] = {
+            'smap' : os.path.expanduser('~'),
+            'css'  : os.path.expanduser('~'),
+            'docx' : os.path.expanduser('~'),
+        }
+    if 'useSmap' not in prefs:
+        prefs['useSmap'] = False
+    if 'useSmapPath' not in prefs:
+        prefs['useSmapPath'] = ''
+    if 'useCss' not in prefs:
+        prefs['useCss'] = False
+    if 'useCssPath' not in prefs:
+        prefs['useCssPath'] = ''
+    if 'lastDocxPath' not in prefs:
+        prefs['lastDocxPath'] = ''
+    if 'debug' not in prefs:
+        prefs['debug'] = False
+
+    _DEBUG_ = prefs['debug']
 
     if _DEBUG_:
-        print('Python sys.path', sys.path)
+        print('Current Python sys.path: {}.\n'.format(sys.path))
 
-    inpath = fileChooser()
+    ''' Launch Main Dialog '''
+    details = launch_gui(bk, prefs)
+    if _DEBUG_:
+        print('Plugin criteria: {}.\n'.format(details))
+
+    inpath = ''
+    smap = ''
+    if details['docx'] is not None:
+        inpath = details['docx']
+    if details['smap'][0] and os.path.isfile(details['smap'][1]):
+        smap = open(details['smap'][1], encoding='utf-8').read()
+        if _DEBUG_:
+            print('Custom style map file: {}.\n'.format(details['smap'][1]))
+    css = None
+    if details['css'][0] and os.path.isfile(details['css'][1]):
+        css = open(details['css'][1], encoding='utf-8').read()
+        if _DEBUG_:
+            print('Custom css file: {}.\n'.format(details['css'][1]))
+
     if inpath == '' or not os.path.exists(inpath):
         print('No input file selected!')
-        bk.savePrefs(prefs)
         return 0
 
-    print ('Path to DOCX file {0}'.format(inpath))
-    prefs['use_file_path'] = pathof(os.path.dirname(inpath))
-    
+    print('Path to DOCX file {0}.\n'.format(inpath))
 
     with make_temp_directory() as temp_dir:
         epub_build = os.path.join(temp_dir, 'OEBPS')
         os.mkdir(os.path.join(epub_build))
         img_dir = os.path.join(epub_build, 'Images')
         os.mkdir(os.path.join(img_dir))
-        convert_image = mmth.images.img_element(ImageWriter(img_dir))
-        with open(inpath, 'rb') as docx_file:
-            result = mmth.convert_to_html(docx_file, convert_image=convert_image)
-            docx_html = result.value
-            messages = result.messages
-            if _DEBUG_:
-                for message in result.messages:
-                    print(message)
+        cssfile = None
+        if css is not None:
+            print('Adding styleheet to epub...\n')
+            styles_dir = os.path.join(epub_build, 'Styles')
+            os.mkdir(os.path.join(styles_dir))
+            cssfile = os.path.join(epub_build,'stylesheet.css')
+            open(cssfile,'wb').write(css.encode('utf-8'))
 
+        # Process images (if any)
+        convert_image = mmth.images.img_element(ImageWriter(img_dir))
+
+        with open(inpath, 'rb') as docx_file:
+            print('Creating html...\n')
+            if details['smap'] and len(smap):
+                result = mmth.convert_to_html(docx_file, style_map=smap, convert_image=convert_image, ignore_empty_paragraphs=False)
+            else:
+                result = mmth.convert_to_html(docx_file, convert_image=convert_image, ignore_empty_paragraphs=False)
+            docx_html = result.value
+            print('Warnings/errors from Mammoth conversion:')
+            for message in result.messages:
+                print(message)
+            print('\n')
+
+        finished_html = build_html(docx_html, details['css'][0])
+
+        print('Adding html file to epub...\n')
         htmlfile = os.path.join(epub_build,'Section0001.xhtml')
-        file_open(htmlfile,'wb').write(docx_html.encode('utf-8'))
-        qe = QuickEpub(temp_dir, epub_build, htmlfile, prefs['epub_version'], img_map)
+        open(htmlfile,'wb').write(finished_html.encode('utf-8'))
+
+        print('Importing epub...\n')
+        qe = QuickEpub(temp_dir, epub_build, htmlfile, details['vers'], img_map, cssfile)
         epub = qe.makeEPUB()
 
-        # Save prefs to json
-        bk.savePrefs(prefs)
         if _DEBUG_:
-            print ('Path to epub or src {0}'.format(epub))
-        #sleep(30)
-        with file_open(epub,'rb')as fp:
+            print('Path to epub or src {0}.\n'.format(epub))
+        # sleep(30)
+        with open(epub,'rb')as fp:
             data = fp.read()
         bk.addotherfile('dummy.epub', data)
 
     return 0
 
 def main():
-    print ('I reached main when I should not have\n')
+    print('I reached main when I should not have\n')
     return -1
 
 if __name__ == "__main__":

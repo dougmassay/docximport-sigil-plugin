@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:ts=4:sw=4:softtabstop=4:smarttab:expandtab
 
@@ -12,7 +11,7 @@ from datetime import datetime, timedelta
 
 DOWNLOAD_PAGE = 'https://github.com/dougmassay/docximport-sigil-plugin/releases'
 url = 'https://raw.githubusercontent.com/dougmassay/docximport-sigil-plugin/master/checkversion.xml'
-delta = 12
+delta = 0  # Used in GUI ... check as long as user has not disabled update checking
 
 
 def string_to_date(datestring):
@@ -31,10 +30,13 @@ class UpdateChecker():
     self.lastonlineversion  : version string of last online version retrieved/stored
     self.w                  : bk._w from plugin.py
     '''
-    def __init__(self, lasttimechecked, lastonlineversion, w):
+    def __init__(self, lasttimechecked, w, lastonlineversion=None):
         self.delta = delta
         self.url = url
-        self.lasttimechecked = string_to_date(lasttimechecked)  # back to datetieme object
+        self.check4last = False
+        if lastonlineversion is not None:
+            self.check4last = True
+        self.lasttimechecked = string_to_date(lasttimechecked)  # back to datetime object
         self.lastonlineversion = lastonlineversion
         self.w = w
 
@@ -93,8 +95,12 @@ class UpdateChecker():
         if (datetime.now() - self.lasttimechecked > timedelta(hours=self.delta)):
             _online_version = self.get_online_version()
             # if online version is newer, make sure it hasn't been seen already
-            if _online_version is not None and tuple_version(_online_version) > tuple_version(_current_version) and _online_version != self.lastonlineversion:
-                return True, _online_version, str(datetime.now())
+            if self.check4last:
+                if _online_version is not None and tuple_version(_online_version) > tuple_version(_current_version) and _online_version != self.lastonlineversion:
+                    return True, _online_version, str(datetime.now())
+            else:
+                if _online_version is not None and tuple_version(_online_version) > tuple_version(_current_version):
+                    return True, _online_version, str(datetime.now())
         return False, _online_version, str(datetime.now())
 
 def main():

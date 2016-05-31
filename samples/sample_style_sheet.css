@@ -1,0 +1,9 @@
+h1, h2, h3, h4, h5, h6 {text-align: center;}
+h1 {margin-top: 25%;}
+h2 {margin-top: 2em;}
+h3 {margin-top: 10%;}
+p {margin: 0.2em 0 0 0; text-indent: 1.2em; text-align: justify;}
+p.first {text-indent: 0;}
+h4 + p {margin-top: 2em;}
+span.endnote_anchor {line-height: 0; }
+a.note {text-decoration: none;}

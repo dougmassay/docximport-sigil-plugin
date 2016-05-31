@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:ts=4:sw=4:softtabstop=4:smarttab:expandtab
 
@@ -20,11 +19,13 @@ TEMP_DIR = os.path.join(SCRIPT_DIR, PLUGIN_NAME)
 PLUGIN_FILES = ['mmth',
             'cbbl',
             'parsim',
+            'images',
+            'dialogs.py',
+            'htmlformat.py',
             'plugin.py',
             'plugin.xml',
             'quickepub.py',
-            'updatecheck.py',
-            'utilities.py']
+            'updatecheck.py']
 
 def findVersion():
     _version_pattern = re.compile(r'<version>([^<]*)</version>')
@@ -61,7 +62,7 @@ def removePreviousTmp(rmzip=False):
         shutil.rmtree(TEMP_DIR)
 
     if rmzip:  # Remove zip file if indicated.
-        print ('Removing any current zip file ...')
+        print('Removing any current zip file ...')
         if os.path.exists(ARCHIVE_NAME):
             os.remove(ARCHIVE_NAME)
 
@@ -83,10 +84,10 @@ if __name__ == "__main__":
     print('Removing any previous build leftovers ...')
     removePreviousTmp(rmzip=True)
 
-    print ('Creating temp {} directory ...'.format(PLUGIN_NAME))
+    print('Creating temp {} directory ...'.format(PLUGIN_NAME))
     os.mkdir(TEMP_DIR)
 
-    print ('Copying everything to temp {} directory ...'.format(PLUGIN_NAME))
+    print('Copying everything to temp {} directory ...'.format(PLUGIN_NAME))
     for entry in PLUGIN_FILES:
         entry_path = os.path.join(SCRIPT_DIR, entry)
         if os.path.exists(entry_path) and os.path.isdir(entry_path):
@@ -96,12 +97,12 @@ if __name__ == "__main__":
         else:
             sys.exit('Couldn\'t copy necessary plugin files!')
 
-    print ('Creating {} ...'.format(os.path.basename(ARCHIVE_NAME)))
+    print('Creating {} ...'.format(os.path.basename(ARCHIVE_NAME)))
     outzip = zipfile.ZipFile(ARCHIVE_NAME, 'w')
     zipUpDir(outzip, SCRIPT_DIR, os.path.basename(TEMP_DIR))
     outzip.close()
 
-    print ('Plugin successfully created!')
+    print('Plugin successfully created!')
 
     print('Removing temp build directory ...')
     removePreviousTmp()

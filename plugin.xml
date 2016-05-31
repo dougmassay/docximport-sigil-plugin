@@ -4,9 +4,9 @@
   <type>input</type>
   <author>DiapDealer</author>
   <description>Import DOCX files for editing in Sigil</description>
-  <engine>python3.4,python2.7</engine>
-  <version>0.1.0</version>
+  <engine>python3.4</engine>
+  <version>0.2.0</version>
   <oslist>osx,unx,win</oslist>
   <autostart>true</autostart>
-  <autoclose>true</autoclose>
+  <autoclose>false</autoclose>
 </plugin>

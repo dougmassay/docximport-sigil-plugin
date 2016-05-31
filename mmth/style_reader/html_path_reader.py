@@ -79,7 +79,7 @@ class_name = "." identifier
 
 fresh = ":fresh"
 
-identifier = ~"[A-Z0-9]+"i
+identifier = ~"[_A-Z0-9]+"i
 
 whitespace = ~"\s"*
 
