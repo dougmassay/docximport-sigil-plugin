@@ -5,6 +5,7 @@ from __future__ import unicode_literals, division, absolute_import, print_functi
 
 import os
 import textwrap
+from datetime import datetime
 from uuid import uuid4
 
 from epub_utils import epub_zip_up_book_contents
@@ -19,29 +20,30 @@ CONTAINER = textwrap.dedent('''<?xml version="1.0" encoding="UTF-8"?>
 OPF = textwrap.dedent('''<?xml version="1.0" encoding="utf-8"?>
 <package version="{0}" unique-identifier="BookId" xmlns="http://www.idpf.org/2007/opf">
   <metadata xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:identifier id="BookId" opf:scheme="UUID">urn:uuid:{1}</dc:identifier>
+    {1}
     <dc:language>en</dc:language>
     <dc:title>[No data]</dc:title>
+    {2}
   </metadata>
   <manifest>
     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
     <item id="Section0001.xhtml" href="Section0001.xhtml" media-type="application/xhtml+xml"/>
-    {2}
     {3}
+    {4}
   </manifest>
   <spine toc="ncx">
     <itemref  idref="Section0001.xhtml"/>
   </spine>
   <guide>
+    <reference type="text" title="Text" href="Section0001.xhtml"/>
   </guide>
 </package>''')
 
 NCX = textwrap.dedent('''<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN"
-   "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
+{0}
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
 <head>
-   <meta name="dtb:uid" content="urn:uuid:{0}" />
+   <meta name="dtb:uid" content="urn:uuid:{1}" />
    <meta name="dtb:depth" content="0" />
    <meta name="dtb:totalPageCount" content="0" />
    <meta name="dtb:maxPageNumber" content="0" />
@@ -61,6 +63,12 @@ NCX = textwrap.dedent('''<?xml version="1.0" encoding="utf-8"?>
 
 IMG = '<item id="{0}" href="Images/{0}" media-type="{1}"/>'
 CSS = '<item id="css" href="stylesheet.css" media-type="text/css"/>'
+NCX_DOCTYPE = textwrap.dedent('''<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN"
+   "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">''')
+OPF_IDENT = '<dc:identifier id="BookId"{0}>{1}{2}</dc:identifier>'
+DC_MODIFIED3 = '<meta property="dcterms:modified">{}</meta>'
+DC_MODIFIED2 = '<dc:date opf:event="modification">{}</dc:date>'
+
 
 class QuickEpub(object):
     def __init__(self, temp_dir, outdir, htmlfile, version, img_map, cssfile=None):
@@ -87,13 +95,26 @@ class QuickEpub(object):
         cssmanifest = ''
         if self.cssfile is not None:
             cssmanifest = CSS
-        opfdata = OPF.format(self.version, self.uid, self.img_items, cssmanifest)
+        if self.version == '3.0':
+            ident = OPF_IDENT.format('', 'urn:uuid:', self.uid)
+        else:
+            ident = OPF_IDENT.format(' opf:scheme="UUID"', 'urn:uuid:', self.uid)
+        if self.version == '3.0':
+            modification = DC_MODIFIED3.format(datetime.utcnow().replace(microsecond=0).isoformat() + 'Z')
+        else:
+            modification = DC_MODIFIED2.format(datetime.utcnow().replace(microsecond=0).isoformat() + 'Z')
+        opfdata = OPF.format(self.version, ident, modification, self.img_items, cssmanifest)
         open(opffile,'wb').write(opfdata.encode('utf-8'))
         return opffile
 
     def make_ncx(self):
+        doctype = '{}'
+        if self.version == '3.0':
+            doctype = doctype.format('')
+        else:
+            doctype = doctype.format(NCX_DOCTYPE)
         ncxfile = os.path.join(self.outdir,'toc.ncx')
-        ncxdata = NCX.format(self.uid)
+        ncxdata = NCX.format(doctype, self.uid)
         open(ncxfile,'wb').write(ncxdata.encode('utf-8'))
         return ncxfile
 
