@@ -10,7 +10,7 @@ Links
 
 * Sigil website is at <http://sigil-ebook.com>
 * Sigil support forums are at <http://www.mobileread.com/forums/forumdisplay.php?f=203>
-* DOCXImport plugin MobileRead support thread: <http://www.mobileread.com/forums/showthread.php?t=>
+* DOCXImport plugin MobileRead support thread: <http://www.mobileread.com/forums/showthread.php?t=273966>
 
 Building
 ========
@@ -36,7 +36,7 @@ Linux users will have to make sure that the Tk graphical python module is presen
 This plugin will work with either Python 3.4+ or Python 2.7+ (defaults to 3.x if both are present).
 The absolute minimum version of Sigil required is v0.8.3 (Python must be installed separately prior to v0.9.0)
 
-Get more help at the DOCXImport plugin [MobileRead support thread.](http://www.mobileread.com/forums/showthread.php?t=247087)
+Get more help at the DOCXImport plugin [MobileRead support thread.](http://www.mobileread.com/forums/showthread.php?t=273966)
 
 A sample docx file (along with a sample mammoth style map and css file) are available in the samples folder of the github reppository. For more help with custom style maps, check out the "Writing Style Maps" section of the [Mammoth README.](https://github.com/mwilliamson/python-mammoth#writing-style-maps)
 
