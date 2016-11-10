@@ -5,6 +5,8 @@ Import DOCX documents into Sigil as epubs
 
 A Sigil plugin based on the Python [Mammoth module](https://github.com/mwilliamson/python-mammoth).
 
+**NOTE: this plugin periodically checks for updated versions by connecting to this Github repository**
+
 Links
 =====
 
