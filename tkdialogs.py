@@ -39,21 +39,23 @@ _DETAILS = {
 }
 
 
-def launch_gui(bk, prefs):
+def launch_tk_gui(bk, prefs):
     root = tkinter.Tk()
     root.withdraw()
     root.title('')
     root.resizable(True, True)
     root.minsize(420, 400)
     root.option_add('*font', 'Arial -12')
-    img = tkinter.Image('photo', file=os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'images/icon.png'))
-    root.tk.call('wm','iconphoto',root._w,img)
+    if not sys.platform.startswith('darwin'):
+        img = tkinter.Image('photo', file=os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'images/icon.png'))
+        root.tk.call('wm','iconphoto',root._w,img)
     guiMain(root, bk, prefs).pack(fill=tkinter.constants.BOTH, expand=True)
     root.mainloop()
     return _DETAILS
 
 class guiMain(tkinter.Frame):
     def __init__(self, parent, bk, prefs):
+        print('Using tkinter')
         tkinter.Frame.__init__(self, parent, border=5)
         self.parent = parent
         # Edit Plugin container object
@@ -272,11 +274,13 @@ class guiMain(tkinter.Frame):
     def check_for_update(self):
         '''Use updatecheck.py to check for newer versions of the plugin'''
         chk = UpdateChecker(self.prefs['last_time_checked'], self.bk._w)
+        print(self.prefs['last_time_checked'])
         update_available, online_version, time = chk.update_info()
         # update preferences with latest date/time/version
         self.prefs['last_time_checked'] = time
         if online_version is not None:
             self.prefs['last_online_version'] = online_version
+        print(update_available, online_version)
         if update_available:
             return (True, online_version)
         return (False, online_version)
@@ -308,8 +312,8 @@ def main():
 
     prefs['use_file_path'] = os.path.expanduser('~')
     prefs['epub_version'] = '2.0'
-    prefs['check_for_updates'] = False
-    prefs['last_time_checked'] = str(datetime.now() - timedelta(hours=7))
+    prefs['check_for_updates'] = True
+    prefs['last_time_checked'] = str(datetime.now() - timedelta(days=3))
     prefs['last_online_version'] = '0.1.0'
     prefs['windowGeometry'] = None
     prefs['lastDir'] = {
@@ -324,7 +328,7 @@ def main():
     prefs['lastDocxPath'] = ''
     prefs['debug'] = False
 
-    details = launch_gui(sim_bk, prefs)
+    details = launch_tk_gui(sim_bk, prefs)
     print(details)
     return 0
 

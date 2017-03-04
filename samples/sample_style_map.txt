@@ -5,7 +5,7 @@ p.Subtitle => h4.subtitle
 p[style-name='Body Text First Indent'] => p.first:fresh
 
 # if you don't use ":fresh", all consecutive same styles will be lumped into one html element.
-p.TextBodyIndent => p:fresh
+p[style-name='Body Text Indent'] => p:fresh
 p.HorizontalLine => hr.sigil_split_marker
 
 # If you don't want your end|footnotes "sup"ed, then change it here.
@@ -16,3 +16,7 @@ r[style-name='Endnote anchor'] => span.endnote_anchor
 # Uncomment these next two if you don't like the default <em> and <strong>
 #b => b
 #i => i
+
+# Comments are ignored by default. To include comments in the generated HTML,
+# add a style mapping for `comment-reference`. For instance:
+comment-reference => span.comment_anchor

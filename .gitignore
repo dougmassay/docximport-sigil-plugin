@@ -43,3 +43,6 @@ docximport/
 
 # Zip files (plugin releases)
 *.zip
+
+# uncompiled translations files
+*.ts

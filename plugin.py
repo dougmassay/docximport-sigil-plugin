@@ -11,7 +11,6 @@ from datetime import datetime, timedelta
 
 import mmth
 from quickepub import QuickEpub
-from dialogs import launch_gui
 from htmlformat import build_html
 
 
@@ -56,9 +55,24 @@ def run(bk):
     global img_map
     global _DEBUG_
 
+    # Use Qt interface if Sigil >= v0.9.8 and/or PyQt5 is available
+    supports_pyqt = (bk.launcher_version() >= 20170115)
+    if supports_pyqt:
+        try:
+            #from PyQt5.QtWidgets import QApplication
+            from qtdialogs import launch_qt_gui as launch_gui
+        except ImportError: # Using an external python that doeesn't have PyQt5
+            from tkdialogs import launch_tk_gui as launch_gui
+        else:
+            from qtdialogs import launch_qt_gui as launch_gui
+    else:
+        from tkdialogs import launch_tk_gui as launch_gui
+
     prefs = bk.getPrefs()
 
     # set default preference values
+    if 'language_override' not in prefs:
+        prefs['language_override'] = None
     if 'use_file_path' not in prefs:
         prefs['use_file_path'] = os.path.expanduser('~')
     if 'epub_version' not in prefs:
@@ -72,6 +86,8 @@ def run(bk):
 
     if 'windowGeometry' not in prefs:
         prefs['windowGeometry'] = None
+    if 'qt_geometry' not in prefs:
+        prefs['qt_geometry'] = None
     if 'lastDir' not in prefs:
         prefs['lastDir'] = {
             'smap' : os.path.expanduser('~'),

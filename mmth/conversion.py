@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+from functools import partial
 import base64
 
 from . import documents, results, html_paths, images, writers, html, lists
@@ -24,6 +25,14 @@ def convert_document_element_to_html(element,
     if convert_image is None:
         convert_image = images.img_element(_generate_image_attributes)
     
+    if isinstance(element, documents.Document):
+        comments = dict(
+            (comment.comment_id, comment)
+            for comment in element.comments
+        )
+    else:
+        comments = {}
+
     messages = []
     converter = _DocumentConverter(
         messages=messages,
@@ -31,7 +40,9 @@ def convert_document_element_to_html(element,
         convert_image=convert_image,
         id_prefix=id_prefix,
         ignore_empty_paragraphs=ignore_empty_paragraphs,
-        note_references=[])
+        note_references=[],
+        comments=comments,
+    )
     nodes = converter.visit(element)
     
     writer = writers.writer(output_format)
@@ -49,13 +60,15 @@ def _generate_image_attributes(image):
 
 
 class _DocumentConverter(documents.ElementVisitor):
-    def __init__(self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs, note_references):
+    def __init__(self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs, note_references, comments):
         self._messages = messages
         self._style_map = style_map
         self._id_prefix = id_prefix
         self._ignore_empty_paragraphs = ignore_empty_paragraphs
         self._note_references = note_references
+        self._referenced_comments = []
         self._convert_image = convert_image
+        self._comments = comments
     
     def visit_image(self, image):
         try:
@@ -71,42 +84,43 @@ class _DocumentConverter(documents.ElementVisitor):
             for reference in self._note_references
         ]
         notes_list = html.element("ol", {}, self._visit_all(notes))
-        return nodes + [notes_list]
+        comments = html.element("dl", {}, lists.flat_map(self.visit_comment, self._referenced_comments))
+        return nodes + [notes_list, comments]
 
 
     def visit_paragraph(self, paragraph):
-        content = self._visit_all(paragraph.children)
-        if self._ignore_empty_paragraphs:
-            children = content
-        else:
-            children = [html.force_write] + content
+        def children():
+            content = self._visit_all(paragraph.children)
+            if self._ignore_empty_paragraphs:
+                return content
+            else:
+                return [html.force_write] + content
         
         html_path = self._find_html_path_for_paragraph(paragraph)
         return html_path.wrap(children)
 
 
     def visit_run(self, run):
-        nodes = self._visit_all(run.children)
+        nodes = lambda: self._visit_all(run.children)
+        paths = []
         if run.is_strikethrough:
-            nodes = self._find_style_for_run_property("strikethrough", default="s").wrap(nodes)
+            paths.append(self._find_style_for_run_property("strikethrough", default="s"))
         if run.is_underline:
-            nodes = self._convert_underline(nodes)
+            paths.append(self._find_style_for_run_property("underline"))
         if run.vertical_alignment == documents.VerticalAlignment.subscript:
-            nodes = html_paths.element(["sub"], fresh=False).wrap(nodes)
+            paths.append(html_paths.element(["sub"], fresh=False))
         if run.vertical_alignment == documents.VerticalAlignment.superscript:
-            nodes = html_paths.element(["sup"], fresh=False).wrap(nodes)
+            paths.append(html_paths.element(["sup"], fresh=False))
         if run.is_italic:
-            nodes = self._find_style_for_run_property("italic", default="em").wrap(nodes)
+            paths.append(self._find_style_for_run_property("italic", default="em"))
         if run.is_bold:
-            nodes = self._find_style_for_run_property("bold", default="strong").wrap(nodes)
-        html_path = self._find_html_path_for_run(run)
-        if html_path:
-            nodes = html_path.wrap(nodes)
-        return nodes
-    
-    
-    def _convert_underline(self, nodes):
-        return self._find_style_for_run_property("underline").wrap(nodes)
+            paths.append(self._find_style_for_run_property("bold", default="strong"))
+        paths.append(self._find_html_path_for_run(run))
+
+        for path in paths:
+            nodes = partial(path.wrap, nodes)
+
+        return nodes()
     
     
     def _find_style_for_run_property(self, element_type, default=None):
@@ -167,9 +181,8 @@ class _DocumentConverter(documents.ElementVisitor):
     def visit_line_break(self, line_break):
         return [html.self_closing_element("br")]
     
-
     def visit_note_reference(self, note_reference):
-        self._note_references.append(note_reference);
+        self._note_references.append(note_reference)
         note_number = len(self._note_references)
         return [
             #html.element("sup", {}, [
@@ -193,15 +206,49 @@ class _DocumentConverter(documents.ElementVisitor):
         return [
             html.element("li", {"id": self._note_html_id(note)}, note_body)
         ]
-        self._html_generator.start("li", {"id": self._note_html_id(note)})
-        note_generator = self._html_generator.child()
-        self._with_html_generator(note_generator)._visit_all(note.body)
-        note_generator.text(" ")
-        note_generator.start("a", {"href": "#" + self._note_ref_html_id(note)})
-        note_generator.text(_up_arrow)
-        note_generator.end_all()
-        self._html_generator.append(note_generator)
-        self._html_generator.end()
+
+
+    def visit_comment_reference(self, reference):
+        def nodes():
+            comment = self._comments[reference.comment_id]
+            count = len(self._referenced_comments) + 1
+            label = "[{0}{1}]".format(_comment_author_label(comment), count)
+            self._referenced_comments.append((label, comment))
+            return [
+                # TODO: remove duplication with note references
+                html.element("a", {
+                    "href": "#" + self._referent_html_id("comment", reference.comment_id),
+                    "id": self._reference_html_id("comment", reference.comment_id),
+                }, [html.text(label)])
+            ]
+
+        html_path = self._find_html_path(
+            None,
+            "comment_reference",
+            default=html_paths.ignore,
+        )
+
+        return html_path.wrap(nodes)
+
+    def visit_comment(self, referenced_comment):
+        label, comment = referenced_comment
+        # TODO remove duplication with notes
+        body = self._visit_all(comment.body) + [
+            html.collapsible_element("p", {}, [
+                html.text(" "),
+                html.element("a", {"href": "#" + self._reference_html_id("comment", comment.comment_id)}, [
+                    html.text(_up_arrow)
+                ]),
+            ])
+        ]
+        return [
+            html.element(
+                "dt",
+                {"id": self._referent_html_id("comment", comment.comment_id)},
+                [html.text("Comment {0}".format(label))],
+            ),
+            html.element("dd", {}, body),
+        ]
 
 
     def _visit_all(self, elements):
@@ -211,24 +258,24 @@ class _DocumentConverter(documents.ElementVisitor):
     def _find_html_path_for_paragraph(self, paragraph):
         default = html_paths.path([html_paths.element("p", fresh=True)])
         return self._find_html_path(paragraph, "paragraph", default)
-    
+
     def _find_html_path_for_run(self, run):
-        return self._find_html_path(run, "run", default=None)
-        
-    
+        return self._find_html_path(run, "run", default=html_paths.empty)
+
+
     def _find_html_path(self, element, element_type, default):
         style = self._find_style(element, element_type)
         if style is not None:
             return style.html_path
-        
-        if element.style_id is not None:
+
+        if getattr(element, "style_id", None) is not None:
             self._messages.append(results.warning(
                 "Unrecognised {0} style: {1} (Style ID: {2})".format(
                     element_type, element.style_name, element.style_id)
             ))
-        
+
         return default
-    
+
     def _find_style(self, element, element_type):
         for style in self._style_map:
             document_matcher = style.document_matcher
@@ -236,17 +283,23 @@ class _DocumentConverter(documents.ElementVisitor):
                 return style
 
     def _note_html_id(self, note):
-        return self._html_id("{0}-{1}".format(note.note_type, note.note_id))
-        
+        return self._referent_html_id(note.note_type, note.note_id)
+
     def _note_ref_html_id(self, note):
-        return self._html_id("{0}-ref-{1}".format(note.note_type, note.note_id))
-    
+        return self._reference_html_id(note.note_type, note.note_id)
+
+    def _referent_html_id(self, reference_type, reference_id):
+        return self._html_id("{0}-{1}".format(reference_type, reference_id))
+
+    def _reference_html_id(self, reference_type, reference_id):
+        return self._html_id("{0}-ref-{1}".format(reference_type, reference_id))
+
     def _html_id(self, suffix):
         return "{0}{1}".format(self._id_prefix, suffix)
-        
+
 
 def _document_matcher_matches(matcher, element, element_type):
-    if matcher.element_type in ["underline", "strikethrough", "bold", "italic"]:
+    if matcher.element_type in ["underline", "strikethrough", "bold", "italic", "comment_reference"]:
         return matcher.element_type == element_type
     else:
         return (
@@ -262,5 +315,10 @@ def _document_matcher_matches(matcher, element, element_type):
                 matcher.numbering == element.numbering
             )
         )
+
+
+def _comment_author_label(comment):
+    return comment.author_initials or ""
+
 
 _up_arrow = "↑"

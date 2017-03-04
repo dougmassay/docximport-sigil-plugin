@@ -1,0 +1,209 @@
+# 1.2.0
+
+* Use alt text title as alt text for images when the alt text description is
+  blank or missing.
+  
+# 1.1.1
+
+* Handle comments without author initials.
+
+* Change numbering of comments to be global rather than per-user to match the
+  behaviour of Word.
+
+# 1.1.0
+
+* Add support for comments.
+
+# 1.0.4
+
+* Add support for w:sdt elements. This allows the bodies of content controls,
+  such as bibliographies, to be converted.
+
+# 1.0.3
+
+* Add support for table cells spanning multiple rows.
+
+# 1.0.2
+
+* Add support for table cells spanning multiple columns.
+
+# 1.0.1
+
+* Improve script installation on Windows by using entry_points instead of
+  scripts in setup.py.
+
+# 1.0.0
+
+* Remove deprecated convert_underline argument.
+
+* Officially support ID prefixes.
+
+* Generated IDs no longer insert a hyphen after the ID prefix.
+
+* The default ID prefix is now the empty string rather than a random number
+  followed by a hyphen.
+
+* Rename mammoth.images.inline to mammoth.images.img_element to better reflect
+  its behaviour.
+
+# 0.3.31
+
+* Improve collapsing of similar non-fresh HTML elements.
+
+# 0.3.30
+
+* Allow bold and italic style mappings to be configured.
+
+# 0.3.29
+
+* Handle references to missing styles when reading documents.
+
+# 0.3.28
+
+* Improve support for lists made in LibreOffice. Specifically, this changes the
+  default style mapping for paragraphs with a style of "Normal" to have the
+  lowest precedence.
+
+# 0.3.27
+
+* Handle XML where the child nodes of an element contains text nodes.
+
+# 0.3.26
+
+* Always use mc:Fallback when reading mc:AlternateContent elements.
+
+# 0.3.25
+
+* Remove duplicate messages from results.
+
+* Read v:imagedata with r:id attribute.
+
+* Read children of v:roundrect.
+
+* Ignore office-word:wrap, v:shadow and v:shapetype.
+
+# 0.3.24
+
+* Continue with warning if external images cannot be found.
+
+* Add support for embedded style maps.
+
+# 0.3.23
+
+* Fix Python 3 support.
+
+# 0.3.22
+
+* Generate warnings for not-understood style mappings and continue, rather than
+  stopping with an error.
+
+* Support file objects without a name attribute again (broken since 0.3.20).
+
+# 0.3.21
+
+* Ignore w:numPr elements without w:numId or w:ilvl children.
+
+# 0.3.20
+
+* Add support for linked images.
+
+# 0.3.19
+
+* Fix: cannot extract raw text from elements without children
+
+# 0.3.18
+
+* Support links and images in footnotes and endnotes.
+
+# 0.3.17
+
+* Add support for underlines in style map.
+
+* Add support for strikethrough.
+
+# 0.3.16
+
+* Add basic support for text boxes. The contents of the text box are treated as
+  a separate paragraph that appears after the paragraph containing the text box.
+
+# 0.3.15
+
+* Support styles defined without a name
+
+# 0.3.14
+
+* Add ignore_empty_paragraphs option, which defaults to True.
+
+# 0.3.13
+
+* Always use forward slashes in ZIP paths. This should fix image handling on
+  Windows.
+
+# 0.3.12
+
+* Make style names case-insensitive in style mappings. This should make style
+  mappings easier to write, especially since Microsoft Word sometimes represents
+  style names in the UI differently from in the style definition. For instance,
+  the style displayed in Word as "Heading 1" has  a style name of "heading 1".
+  This hopefully shouldn't cause an issue for anyone, but if you were relying
+  on case-sensitivity, please do get in touch.
+
+# 0.3.11
+
+* Add support for hyperlinks to bookmarks in the same document.
+
+# 0.3.10
+
+* Add basic support for Markdown. Not all features are currently supported.
+
+# 0.3.9
+
+* Add default style mappings for builtin footnote and endnote styles in
+  Microsoft Word and LibreOffice.
+
+* Allow style mappings with a zero-element HTML path.
+
+* Emit warnings when image types are unlikely to be supported by web browsers.
+
+# 0.3.8
+
+* Add support for endnotes.
+
+# 0.3.7
+
+* Add support for superscript and subscript text.
+
+# 0.3.6
+
+* Add support for footnotes.
+
+# 0.3.5
+
+* Add support for line breaks.
+
+# 0.3.4
+
+* Add optional underline conversion.
+
+# 0.3.3
+
+* Add `mammoth.images.inline`, and document custom image conversion.
+
+# 0.3.2
+
+* Add the function `mammoth.extract_raw_text`.
+
+# 0.3.1
+
+* Add support for tables
+
+# 0.3.0
+
+* Rename --styles CLI argument to --style-map.
+
+* Rename styles argument in convert_to_html to style_map.
+
+* Allow paragraphs and runs to be matched by style name. For instance, to match
+  a paragraph with the style name `Heading 1`:
+  
+    p[style-name='Heading 1']

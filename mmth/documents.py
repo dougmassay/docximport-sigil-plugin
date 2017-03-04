@@ -12,6 +12,7 @@ class HasChildren(Element):
 @cobble.data
 class Document(HasChildren):
     notes = cobble.field()
+    comments = cobble.field()
 
 @cobble.data
 class Paragraph(HasChildren):
@@ -68,10 +69,12 @@ class Image(Element):
         self.open = open
 
 
-def document(children, notes=None):
+def document(children, notes=None, comments=None):
     if notes is None:
         notes = Notes({})
-    return Document(children, notes)
+    if comments is None:
+        comments = []
+    return Document(children, notes, comments=comments)
 
 def paragraph(children, style_id=None, style_name=None, numbering=None):
     return Paragraph(children, style_id, style_name, numbering)
@@ -118,6 +121,7 @@ def table_cell(children, colspan=None, rowspan=None):
     if rowspan is None:
         rowspan = 1
     return TableCell(children=children, colspan=colspan, rowspan=rowspan)
+
 
 line_break = LineBreak
 
@@ -171,5 +175,26 @@ class NoteReference(Element):
 
 note_reference = NoteReference
 
+
+@cobble.data
+class Comment(object):
+    comment_id = cobble.field()
+    body = cobble.field()
+    author_name = cobble.field()
+    author_initials = cobble.field()
+
+def comment(comment_id, body, author_name=None, author_initials=None):
+    return Comment(
+        comment_id=comment_id,
+        body=body,
+        author_name=author_name,
+        author_initials=author_initials,
+    )
+
+@cobble.data
+class CommentReference(Element):
+    comment_id = cobble.field()
+
+comment_reference = CommentReference
 
 ElementVisitor = cobble.visitor(Element)

@@ -31,7 +31,7 @@ Using DOCXImport
 =================
 If you're using Sigil v0.9.0 or later on OSX or Windows, all dependencies should already be met so long as you're using the bundled Python interpreter (default).
 
-Linux users will have to make sure that the Tk graphical python module is present if it's not already.  On Debian-based flavors this can be done with "sudo apt-get install python-tk" for python 2.7 or "sudo apt-get install python3-tk" for Python 3.4.
+Linux users will have to make sure that the Tk or PyQt5 graphical python module is present if it's not already.  On Debian-based flavors this can be done with "sudo apt-get install python-tk" (or python-pyqt5) for python 2.7 or "sudo apt-get install python3-tk" (or python3-pyqt5) for Python 3.4+.
 
 * **Note:** Do not rename any Sigil plugin zip files before attempting to install them
 
@@ -55,11 +55,13 @@ The core plugin files (this is where most contributors will spend their time) ar
     > cbbl (modified Cobble module)
     > parsim (modified Parsimonious module)
     > images (icon)
-    > dialogs.py
+    > gui_utilities.py
     > htmlformat.py
     > plugin.py
     > plugin.xml
+    > qtdialogs.py
     > quickepub.py
+    > tkdialogs.py
     > updatecheck.py
 
 Files used for building/maintaining the plugin:

@@ -20,11 +20,13 @@ PLUGIN_FILES = ['mmth',
             'cbbl',
             'parsim',
             'images',
-            'dialogs.py',
+            'translations',
             'htmlformat.py',
             'plugin.py',
             'plugin.xml',
+            'qtdialogs.py',
             'quickepub.py',
+            'tkdialogs.py',
             'updatecheck.py']
 
 def findVersion():
