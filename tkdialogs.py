@@ -303,9 +303,11 @@ def main():
         def __init__(self):
             w.plugin_name = 'DOCXImport'
             w.plugin_dir = '/home/dlmassay/.local/share/sigil-ebook/sigil/plugins'
+
     class bk(object):
         def __init__(self):
             bk._w = w()
+
         def savePrefs(self, dummy):
             return
     sim_bk = bk()
@@ -331,6 +333,7 @@ def main():
     details = launch_tk_gui(sim_bk, prefs)
     print(details)
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

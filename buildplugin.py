@@ -38,6 +38,7 @@ def findVersion():
         return '{}'.format(match.group(1))
     return '0.X.X'
 
+
 # Find version info from plugin.xml and build zip file name from it
 VERS_INFO =  findVersion()
 ARCHIVE_NAME = os.path.join(SCRIPT_DIR, '{}_v{}.zip'.format(PLUGIN_NAME, VERS_INFO))
@@ -81,6 +82,7 @@ def ignore_in_dirs(base, items, ignored_dirs=None):
             if name.rpartition('.')[-1] in ('pyc', 'pyo'):
                 ans.append(name)
     return ans
+
 
 if __name__ == "__main__":
     print('Removing any previous build leftovers ...')

@@ -6,12 +6,11 @@ from __future__ import unicode_literals, division, absolute_import, print_functi
 import sys
 import os
 import webbrowser
-import regex
 import binascii
 
-from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit, QTextEdit, QGroupBox,
+from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit, QGroupBox,
                              QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy, QDialogButtonBox, QButtonGroup)
-from PyQt5.QtCore import pyqtSlot, QCoreApplication, QT_TRANSLATE_NOOP, QTranslator, Qt
+from PyQt5.QtCore import pyqtSlot, QCoreApplication, QTranslator, Qt
 
 from updatecheck import UpdateChecker, DOWNLOAD_PAGE
 
@@ -29,6 +28,7 @@ def launch_qt_gui(bk, prefs):
     ex = App(bk, prefs)
     app.exec_()
     return _DETAILS
+
 
 _translate = QCoreApplication.translate
 
@@ -73,7 +73,7 @@ class App(QWidget):
         if self.prefs['check_for_updates']:
             self.update, self.newversion = self.check_for_update()
         self.initUI()
- 
+
     def initUI(self):
         main_layout = QVBoxLayout(self)
 
@@ -109,7 +109,7 @@ class App(QWidget):
             self.epub3_select.setChecked(True)
         else:
             self.epub2_select.setChecked(True)
-        
+
         self.groupBox = QGroupBox()
         self.groupBox.setTitle('')
         self.verticalLayout_2 = QVBoxLayout(self.groupBox)
@@ -160,7 +160,7 @@ class App(QWidget):
             self.cust_css_path.setText(self.prefs['useCssPath'])
         self.cust_css_path.setEnabled(False)
         self.chkBoxActions(self.checkbox_css, self.choose_css_button)
-        
+
         main_layout.addWidget(self.groupBox)
         self.checkbox_debug = QCheckBox()
         main_layout.addWidget(self.checkbox_debug)
@@ -182,15 +182,10 @@ class App(QWidget):
         self.setWindowTitle(_translate('App', 'DOCXImport'))
         self.update_label.setText(_translate('App', 'Plugin Update Available'))
         self.get_update_button.setText(_translate('App', 'Go to download page'))
-        #self.epub2_select.setText(_translate('App', 'EPUB2'))
         self.checkbox_get_updates.setText(_translate('App', 'Check for plugin updates'))
-        #self.epub3_select.setText(_translate('App', 'EPUB3'))
         self.docx_label.setText(_translate('App', 'DOCX File to import'))
-        #self.choose_docx_button.setText(_translate('App', "..."))
         self.checkbox_smap.setText(_translate('App', 'Use Custom Style Map'))
-        #self.choose_smap_button.setText(_translate('App', '...'))
         self.checkbox_css.setText(_translate('App', 'Use Custom CSS'))
-        #self.choose_css_button.setText(_translate('App', '...'))
         self.checkbox_debug.setText(_translate('App', 'Debug Mode (change takes effect next plugin run)'))
 
     def fileChooser(self, ftype, qlineedit, qcheck=None, qbutton=None):
@@ -263,7 +258,6 @@ class App(QWidget):
             latest = '/tag/v{}'.format(self.newversion)
             url = url + latest
         webbrowser.open_new_tab(url)
- 
 
     @pyqtSlot()
     def _ok_clicked(self):
@@ -283,7 +277,7 @@ class App(QWidget):
     def closeEvent(self, event):
         # do stuff
         if can_exit:
-            event.accept() # let the window close
+            event.accept()  # let the window close
         else:
             event.ignore()
 
@@ -297,9 +291,11 @@ def main():
         def __init__(self):
             w.plugin_name = 'DOCXImport'
             w.plugin_dir = '/home/dlmassay/.local/share/sigil-ebook/sigil/plugins'
+
     class bk(object):
         def __init__(self):
             bk._w = w()
+
         def savePrefs(self, dummy):
             return
     sim_bk = bk()
@@ -326,6 +322,7 @@ def main():
     details = launch_qt_gui(sim_bk, prefs)
     print(details)
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -59,9 +59,8 @@ def run(bk):
     supports_pyqt = (bk.launcher_version() >= 20170115)
     if supports_pyqt:
         try:
-            #from PyQt5.QtWidgets import QApplication
             from qtdialogs import launch_qt_gui as launch_gui
-        except ImportError: # Using an external python that doeesn't have PyQt5
+        except ImportError:  # Using an external python that doeesn't have PyQt5
             from tkdialogs import launch_tk_gui as launch_gui
         else:
             from qtdialogs import launch_qt_gui as launch_gui
@@ -187,6 +186,7 @@ def run(bk):
 def main():
     print('I reached main when I should not have\n')
     return -1
+
 
 if __name__ == "__main__":
     sys.exit(main())
