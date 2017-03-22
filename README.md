@@ -78,11 +78,11 @@ Feel free to fork the repository and submit pull requests (or just use it privat
 License Information
 =======
 
-###DOCXImport (this plugin)
+### DOCXImport (this plugin)
 
     Released under the GPLv3.
 
-###[Mammoth](https://github.com/mwilliamson/python-mammoth) - "Convert Word documents to simple and clean HTML"
+### [Mammoth](https://github.com/mwilliamson/python-mammoth) - "Convert Word documents to simple and clean HTML"
 
 Released under the 2-Clause BSD License
 
@@ -109,7 +109,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-###[Cobble](https://github.com/mwilliamson/python-cobble) - "Create Python data objects"
+### [Cobble](https://github.com/mwilliamson/python-cobble) - "Create Python data objects"
 
 Released under the 2-Clause BSD License
 
@@ -136,7 +136,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-###[Parsimonious](https://github.com/erikrose/parsimonious) - "The fastest pure-Python PEG parser I can muster"
+### [Parsimonious](https://github.com/erikrose/parsimonious) - "The fastest pure-Python PEG parser I can muster"
 
 Released under the terms of the [MIT license](http://opensource.org/licenses/mit-license.php)
 
