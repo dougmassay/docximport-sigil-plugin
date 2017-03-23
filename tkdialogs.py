@@ -55,7 +55,6 @@ def launch_tk_gui(bk, prefs):
 
 class guiMain(tkinter.Frame):
     def __init__(self, parent, bk, prefs):
-        print('Using tkinter')
         tkinter.Frame.__init__(self, parent, border=5)
         self.parent = parent
         # Edit Plugin container object

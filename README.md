@@ -23,7 +23,7 @@ First, clone the repo:
 
 To create the plugin zip file, run the buildplugin.py script (root of the repository tree) with Python (2 or 3)
 
-    $python buildplugin.py
+    $python buildplugin (or just ./buildplugin if Python is in your path)
 
 This will create the DOCXImport_vX.X.X.zip file that can then be installed into Sigil's plugin manager.
 

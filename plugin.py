@@ -70,8 +70,6 @@ def run(bk):
     prefs = bk.getPrefs()
 
     # set default preference values
-    if 'language_override' not in prefs:
-        prefs['language_override'] = None
     if 'use_file_path' not in prefs:
         prefs['use_file_path'] = os.path.expanduser('~')
     if 'epub_version' not in prefs:

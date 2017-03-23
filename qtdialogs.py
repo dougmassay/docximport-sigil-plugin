@@ -10,7 +10,7 @@ import binascii
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit, QGroupBox,
                              QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy, QDialogButtonBox, QButtonGroup)
-from PyQt5.QtCore import pyqtSlot, QCoreApplication, QTranslator, Qt
+from PyQt5.QtCore import pyqtSlot, QCoreApplication, Qt
 
 from updatecheck import UpdateChecker, DOWNLOAD_PAGE
 
@@ -26,6 +26,7 @@ _DETAILS = {
 def launch_qt_gui(bk, prefs):
     app = QApplication(sys.argv)
     ex = App(bk, prefs)
+    ex.show()
     app.exec_()
     return _DETAILS
 
@@ -39,17 +40,7 @@ class App(QWidget):
         self.bk = bk
         self.prefs = prefs
         self.update = False
-        print('Using PyQt5')
-
-        translator = QTranslator()
-        if prefs['language_override'] is not None:
-            print('Plugin preferences language override in effect')
-            qmf = '{}_{}'.format(bk._w.plugin_name.lower(), prefs['language_override'])
-        else:
-            qmf = '{}_{}'.format(bk._w.plugin_name.lower(), bk.sigil_ui_lang)
-        translator.load(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'translations'))
-        print(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'translations'))
-        print(QApplication.installTranslator(translator))
+        self._ok_to_close = False
 
         self.FTYPE_MAP = {
             'smap': {
@@ -261,12 +252,14 @@ class App(QWidget):
 
     @pyqtSlot()
     def _ok_clicked(self):
+        self._ok_to_close = True
         self.cmdDo()
         self.bk.savePrefs(self.prefs)
         QCoreApplication.instance().quit()
 
     @pyqtSlot()
     def _cancel_clicked(self):
+        self._ok_to_close = True
         '''Close aborting any changes'''
         self.prefs['qt_geometry'] = binascii.b2a_base64(self.saveGeometry()).decode('ascii')
         self.prefs['check_for_updates'] = self.checkbox_get_updates.isChecked()
@@ -275,11 +268,10 @@ class App(QWidget):
         QCoreApplication.instance().quit()
 
     def closeEvent(self, event):
-        # do stuff
-        if can_exit:
+        if self._ok_to_close:
             event.accept()  # let the window close
         else:
-            event.ignore()
+            self._cancel_clicked()
 
 def main():
     ''' For debugging the qt dialog outside of the sigil plugin '''
