@@ -6,6 +6,7 @@ Import DOCX documents into Sigil as epubs
 A Sigil plugin based on the Python [Mammoth module](https://github.com/mwilliamson/python-mammoth).
 
 **NOTE: this plugin periodically checks for updated versions by connecting to this Github repository**
+(this behavior can be change in the GUI)
 
 Links
 =====
@@ -31,7 +32,7 @@ Using DOCXImport
 =================
 If you're using Sigil v0.9.0 or later on OSX or Windows, all dependencies should already be met so long as you're using the bundled Python interpreter (default).
 
-Linux users will have to make sure that the Tk or PyQt5 graphical python module is present if it's not already.  On Debian-based flavors this can be done with "sudo apt-get install python-tk" (or python-pyqt5) for python 2.7 or "sudo apt-get install python3-tk" (or python3-pyqt5) for Python 3.4+.
+Linux users will have to make sure that the Tk or PyQt5 graphical python module is present if it's not already.  On Debian-based flavors this can be done with "sudo apt-get install python3-tk" (or python3-pyqt5).
 
 * **Note:** Do not rename any Sigil plugin zip files before attempting to install them
 
@@ -117,13 +118,13 @@ Copyright (c) 2013, Michael Williamson
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
