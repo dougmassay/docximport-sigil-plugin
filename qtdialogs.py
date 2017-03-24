@@ -31,6 +31,7 @@ def launch_qt_gui(bk, prefs):
     return _DETAILS
 
 
+# No translation currently taking place, but it doesn't hurt to get a head start.
 _translate = QCoreApplication.translate
 
 class App(QWidget):
@@ -170,6 +171,7 @@ class App(QWidget):
         self.show()
 
     def retranslateUi(self, App):
+        # No translation currently taking place, but it doesn't hurt to get a head start.
         self.setWindowTitle(_translate('App', 'DOCXImport'))
         self.update_label.setText(_translate('App', 'Plugin Update Available'))
         self.get_update_button.setText(_translate('App', 'Go to download page'))
