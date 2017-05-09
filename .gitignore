@@ -43,6 +43,7 @@ docximport/
 
 # Zip files (plugin releases)
 *.zip
+*.tar.gz
 
 # compiled translations files
 *.qm

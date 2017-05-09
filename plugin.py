@@ -55,17 +55,9 @@ def run(bk):
     global img_map
     global _DEBUG_
 
-    prefs = bk.getPrefs()
-
-    if 'force_tkinter_gui' not in prefs:
-        prefs['force_tkinter_gui'] = False
-        # immediately generate a json prefs file so the
-        # force_tkinter_gui setting can be edited if need be.
-        bk.savePrefs(prefs)
-
     # Use Qt interface if Sigil >= v0.9.8 and/or PyQt5 is available
     supports_pyqt = (bk.launcher_version() >= 20170115)
-    if supports_pyqt and not prefs['force_tkinter_gui']:
+    if supports_pyqt:
         try:
             from qtdialogs import launch_qt_gui as launch_gui
         except ImportError:  # Using an external python that doeesn't have PyQt5
@@ -74,6 +66,8 @@ def run(bk):
             from qtdialogs import launch_qt_gui as launch_gui
     else:
         from tkdialogs import launch_tk_gui as launch_gui
+
+    prefs = bk.getPrefs()
 
     # set default preference values
     if 'use_file_path' not in prefs:
