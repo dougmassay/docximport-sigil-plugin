@@ -2,7 +2,8 @@ import cbbl as cobble
 
 
 class Element(object):
-    pass
+    def copy(self, **kwargs):
+        return cobble.copy(self, **kwargs)
 
 
 class HasChildren(Element):
@@ -19,6 +20,7 @@ class Paragraph(HasChildren):
     style_id = cobble.field()
     style_name = cobble.field()
     numbering = cobble.field()
+    alignment = cobble.field()
 
 @cobble.data
 class Run(HasChildren):
@@ -29,6 +31,7 @@ class Run(HasChildren):
     is_underline = cobble.field()
     is_strikethrough = cobble.field()
     vertical_alignment = cobble.field()
+    font = cobble.field()
 
 @cobble.data
 class Text(Element):
@@ -38,6 +41,7 @@ class Text(Element):
 class Hyperlink(HasChildren):
     href = cobble.field()
     anchor = cobble.field()
+    target_frame = cobble.field()
 
 @cobble.data
 class Table(HasChildren):
@@ -45,7 +49,7 @@ class Table(HasChildren):
 
 @cobble.data
 class TableRow(HasChildren):
-    pass
+    is_header = cobble.field()
 
 @cobble.data
 class TableCell(HasChildren):
@@ -53,20 +57,25 @@ class TableCell(HasChildren):
     rowspan = cobble.field()
 
 @cobble.data
-class LineBreak(Element):
-    pass
+class Break(Element):
+    break_type = cobble.field()
+
+line_break = Break("line")
+page_break = Break("page")
+column_break = Break("column")
+
 
 @cobble.data
 class Tab(Element):
     pass
     
 
-@cobble.visitable
+@cobble.data
 class Image(Element):
-    def __init__(self, alt_text, content_type, open):
-        self.alt_text = alt_text
-        self.content_type = content_type
-        self.open = open
+    alt_text = cobble.field()
+    title_text = cobble.field()
+    content_type = cobble.field()
+    open = cobble.field()
 
 
 def document(children, notes=None, comments=None):
@@ -76,15 +85,26 @@ def document(children, notes=None, comments=None):
         comments = []
     return Document(children, notes, comments=comments)
 
-def paragraph(children, style_id=None, style_name=None, numbering=None):
-    return Paragraph(children, style_id, style_name, numbering)
+def paragraph(children, style_id=None, style_name=None, numbering=None, alignment=None):
+    return Paragraph(children, style_id, style_name, numbering, alignment=alignment)
 
-def run(children, style_id=None, style_name=None, is_bold=None, is_italic=None, is_underline=None, is_strikethrough=None, vertical_alignment=None):
+def run(
+    children,
+    style_id=None,
+    style_name=None,
+    is_bold=None,
+    is_italic=None,
+    is_underline=None,
+    is_strikethrough=None,
+    vertical_alignment=None,
+    font=None,
+):
     if vertical_alignment is None:
         vertical_alignment = VerticalAlignment.baseline
     return Run(
         children, style_id, style_name, bool(is_bold), bool(is_italic),
         bool(is_underline), bool(is_strikethrough), vertical_alignment,
+        font=font,
     )
 
 class VerticalAlignment(object):
@@ -102,8 +122,8 @@ def tab():
 
 image = Image
 
-def hyperlink(children, href=None, anchor=None):
-    return Hyperlink(href=href, anchor=anchor, children=children)
+def hyperlink(children, href=None, anchor=None, target_frame=None):
+    return Hyperlink(href=href, anchor=anchor, target_frame=target_frame, children=children)
 
 
 @cobble.data
@@ -114,7 +134,10 @@ bookmark = Bookmark
     
 
 table = Table
-table_row = TableRow
+
+def table_row(children, is_header=None):
+    return TableRow(children=children, is_header=bool(is_header))
+
 def table_cell(children, colspan=None, rowspan=None):
     if colspan is None:
         colspan = 1
@@ -122,8 +145,6 @@ def table_cell(children, colspan=None, rowspan=None):
         rowspan = 1
     return TableCell(children=children, colspan=colspan, rowspan=rowspan)
 
-
-line_break = LineBreak
 
 def numbering_level(level_index, is_ordered):
     return _NumberingLevel(str(level_index), bool(is_ordered))
@@ -197,4 +218,5 @@ class CommentReference(Element):
 
 comment_reference = CommentReference
 
-ElementVisitor = cobble.visitor(Element)
+def element_visitor(args):
+    return cobble.visitor(Element, args=args)

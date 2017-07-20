@@ -1,8 +1,11 @@
-from . import docx, conversion, options, images, underline
+from . import docx, conversion, options, images, transforms, underline
 from .raw_text import extract_raw_text_from_element
 from .docx.style_map import write_style_map, read_style_map
 
-__all__ = ["convert_to_html", "extract_raw_text", "images", "underline"]
+__all__ = ["convert_to_html", "extract_raw_text", "images", "transforms", "underline"]
+
+
+_undefined = object()
 
 
 def convert_to_html(*args, **kwargs):
@@ -13,11 +16,13 @@ def convert_to_markdown(*args, **kwargs):
     return convert(*args, output_format="markdown", **kwargs)
 
 
-def convert(fileobj, transform_document=None, id_prefix=None, **kwargs):
+def convert(fileobj, transform_document=None, id_prefix=None, include_embedded_style_map=_undefined, **kwargs):
+    if include_embedded_style_map is _undefined:
+        include_embedded_style_map = True
     if transform_document is None:
         transform_document = lambda x: x
-    if kwargs.get("style_map") is None:
-        kwargs["style_map"] = read_style_map(fileobj)
+    if include_embedded_style_map:
+        kwargs["embedded_style_map"] = read_style_map(fileobj)
     return options.read_options(kwargs).bind(lambda convert_options:
         docx.read(fileobj).map(transform_document).bind(lambda document:
             conversion.convert_document_element_to_html(

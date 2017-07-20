@@ -18,6 +18,7 @@ def data(cls):
     )
     _add_methods(cls, _methods(cls, fields))
     visitable(cls)
+    cls._cobble_fields = fields
     return cls
 
 def _add_methods(cls, methods):
@@ -75,8 +76,12 @@ def _make_hash(cls, names):
     return "def __hash__(self): return hash(({0}))".format(", ".join(elements))
 
 
-def _make_accept(cls):
-    return "def _accept(self, visitor): return visitor.{0}(self)".format(_visit_method_name(cls))
+def _make_accept(cls, args):
+    return "def _accept{args}(self, visitor{args_signature}): return visitor.{method_name}(self{args_signature})".format(
+        args=args,
+        args_signature=_args_signature(args),
+        method_name=_visit_method_name(cls),
+    )
 
 
 _sort_key_count = itertools.count()
@@ -106,11 +111,20 @@ _visitables = set()
 
 def visitable(cls):
     _visitables.add(cls)
-    _add_methods(cls, [_make_accept(cls)])
     return cls
 
 
-def visitor(cls):
+def visitor(cls, args=None):
+    if args is None:
+        args = 0
+    
+    subclasses = set(filter(
+        lambda subclass: subclass in _visitables,
+        _subclasses(cls)
+    ))
+    for subclass in subclasses:
+        _add_methods(subclass, [_make_accept(subclass, args=args)])
+    
     abstract_method_template = """
     @abc.abstractmethod
     def {0}(self, value):
@@ -118,8 +132,7 @@ def visitor(cls):
 """
     abstract_methods = (
         abstract_method_template.format(_visit_method_name(subclass))
-        for subclass in _subclasses(cls)
-        if subclass in _visitables
+        for subclass in subclasses
     )
     
     if six.PY2:
@@ -130,17 +143,27 @@ def visitor(cls):
         py3_metaclass = ", metaclass=abc.ABCMeta"
     
     source = """
-class {0}Visitor(object{1}):
-    {2}
+class {name}Visitor(object{py3_metaclass}):
+    {py2_metaclass}
 
-    def visit(self, value):
-        return value._accept(self)
+    def visit(self, value{args_signature}):
+        return value._accept{args}(self{args_signature})
     
-{3}
-""".format(cls.__name__, py3_metaclass, py2_metaclass, "\n".join(abstract_methods))
+{abstract_methods}
+""".format(
+    name=cls.__name__,
+    py3_metaclass=py3_metaclass,
+    py2_metaclass=py2_metaclass,
+    args_signature=_args_signature(args),
+    args=args,
+    abstract_methods="\n".join(abstract_methods),
+)
     definition = _compile_definitions([source], {abc: abc})
     return next(iter(definition.values()))
 
+
+def _args_signature(args):
+    return "".join(", arg{0}".format(arg_index) for arg_index in range(0, args))
 
 def _compile_definitions(definitions, bindings):
     definition_globals = {"abc": abc}
@@ -162,3 +185,11 @@ def _subclasses(cls):
     return subclasses
 
 
+def copy(obj, **kwargs):
+    obj_type = type(obj)
+    attrs = dict(
+        (name, getattr(obj, name))
+        for name, field in obj_type._cobble_fields
+    )
+    attrs.update(kwargs)
+    return type(obj)(**attrs)

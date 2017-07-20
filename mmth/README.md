@@ -270,6 +270,11 @@ Converts the source document to HTML.
 * `style_map`: a string to specify the mapping of Word styles to HTML.
   See the section "Writing style maps" for a description of the syntax.
 
+* `include_embedded_style_map`: by default,
+  if the document contains an embedded style map, then it is combined with the default style map.
+  To ignore any embedded style maps,
+  pass `include_embedded_style_map=False`.
+
 * `include_default_style_map`: by default, the style map passed in `style_map` is combined with the default style map.
   To stop using the default style map altogether,
   pass `include_default_style_map=False`.
@@ -284,6 +289,11 @@ Converts the source document to HTML.
   a string to prepend to any generated IDs,
   such as those used by bookmarks, footnotes and endnotes.
   Defaults to an empty string.
+  
+* `transform_document`: if set,
+  this function is applied to the document read from the docx file before the conversion to HTML.
+  The API for document transforms should be considered unstable.
+  See [document transforms](#document-transforms).
 
 * Returns a result with the following properties:
 
@@ -316,7 +326,7 @@ Each paragraph is followed by two newlines.
 
 Embeds the style map `style_map` into `fileobj`.
 When Mammoth reads a file object,
-it will use the embedded style if no explicit style map is provided.
+it will use the embedded style map.
 
 * `fileobj`: a file-like object containing the source document.
   Files should be opened for reading and writing in binary mode.
@@ -362,6 +372,86 @@ def convert_image(image):
     }
 
 mammoth.images.img_element(convert_image)
+```
+
+`mammoth.images.data_uri` is the default image converter.
+
+### Document transforms
+
+**The API for document transforms should be considered unstable,
+and may change between any versions.
+If you rely on this behaviour,
+you should pin to a specific version of Mammoth,
+and test carefully before updating.**
+
+Mammoth allows a document to be transformed before it is converted.
+For instance,
+suppose that document has not been semantically marked up,
+but you know that any centre-aligned paragraph should be a heading.
+You can use the `transform_document` argument to modify the document appropriately:
+
+```python
+import mammoth.transforms
+
+def transform_paragraph(element):
+    if element.alignment == "center" and not element.style_id:
+        return element.copy(style_id="Heading2")
+    else:
+        return element
+
+transform_document = mammoth.transforms.paragraph(transform_paragraph)
+
+mammoth.convert_to_html(fileobj, transform_document=transform_document)
+```
+
+Or if you want paragraphs that have been explicitly set to use monospace fonts to represent code:
+
+```python
+import mammoth.documents
+import mammoth.transforms
+
+_monospace_fonts = set(["courier new"])
+
+def transform_paragraph(paragraph):
+    runs = mammoth.transforms.get_descendants_of_type(paragraph, mammoth.documents.Run)
+    if runs and all(run.font and run.font.lower() in _monospace_fonts for run in runs):
+        return paragraph.copy(style_id="code", style_name="Code")
+    else:
+        return paragraph
+
+convert_to_html(
+    fileobj,
+    transform_document=mammoth.transforms.paragraph(transform_paragraph),
+    style_map="p[style-name='Code'] => pre:separator('\n')",
+)
+```
+
+#### `mammoth.transforms.paragraph(transform_paragraph)`
+
+Returns a function that can be used as the `transform_document` argument.
+This will apply the function `transform_paragraph` to each paragraph element.
+`transform_paragraph` should return the new paragraph.
+
+#### `mammoth.transforms.run(transform_run)`
+
+Returns a function that can be used as the `transform_document` argument.
+This will apply the function `transform_run` to each run element.
+`transform_run` should return the new run.
+
+#### `mammoth.transforms.get_descendants(element)`
+
+Gets all descendants of an element.
+
+#### `mammoth.transforms.get_descendants_of_type(element, type)`
+
+Gets all descendants of a particular type of an element.
+For instance, to get all runs within an element `paragraph`:
+
+```python
+import mammoth.documents
+import mammoth.transforms
+
+runs = mammoth.transforms.get_descendants_of_type(paragraph, documents.Run);
 ```
 
 ## Writing style maps
@@ -428,6 +518,13 @@ For instance, to match a paragraph with the style name `Heading 1`:
 
 ```
 p[style-name='Heading 1']
+```
+
+You can also match a style name by prefix.
+For instance, to match a paragraph where the style name starts with `Heading`:
+
+```
+p[style-name^='Heading']
 ```
 
 Styles can also be referenced by style ID.
@@ -512,6 +609,27 @@ Modifiers must be used in the correct order:
 
 ```
 h1.section-title:fresh
+```
+
+#### Separators
+
+To specify a separator to place between the contents of paragraphs that are collapsed together,
+use `:separator('SEPARATOR STRING')`.
+
+For instance, suppose a document contains a block of code where each line of code is a paragraph with the style `Code Block`.
+We can write a style mapping to map such paragraphs to `<pre>` elements:
+
+```
+p[style-name='Code Block'] => pre
+```
+
+Since `pre` isn't marked as `:fresh`,
+consecutive `pre` elements will be collapsed together.
+However, this results in the code all being on one line.
+We can use `:separator` to insert a newline between each line of code:
+
+```
+p[style-name='Code Block'] => pre:separator('\n')
 ```
 
 #### Nested elements

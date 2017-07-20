@@ -19,7 +19,6 @@ TEMP_DIR = os.path.join(SCRIPT_DIR, PLUGIN_NAME)
 
 PLUGIN_FILES = ['mmth',
             'cbbl',
-            'parsim',
             'images',
             'htmlformat.py',
             'plugin.py',
