@@ -1,6 +1,28 @@
+# 1.4.6
+
+* Fix: default style mappings caused footnotes, endnotes and comments
+  containing multiple paragraphs to be converted into a single paragraph.
+
+# 1.4.5
+
+* Read the children of v:rect elements.
+
+# 1.4.4
+
+* Parse paragraph indents.
+
+* Read part paths using relationships. This improves support for documents
+  created by Word Online.
+
+# 1.4.3
+
+* Add style mapping for small caps.
+
+* Add style mapping for tables.
+
 # 1.4.2
 
-* Read children of v:group elements
+* Read children of v:group elements.
 
 # 1.4.1
 

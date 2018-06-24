@@ -19,6 +19,14 @@ RunMatcher = collections.namedtuple("RunMatcher", ["style_id", "style_name"])
 RunMatcher.element_type = "run"
 
 
+def table(style_id=None, style_name=None):
+    return TableMatcher(style_id, style_name)
+
+
+TableMatcher = collections.namedtuple("TableMatcher", ["style_id", "style_name"])
+TableMatcher.element_type = "table"
+
+
 class bold(object):
     element_type = "bold"
 
@@ -33,6 +41,10 @@ class underline(object):
 
 class strikethrough(object):
     element_type = "strikethrough"
+
+
+class small_caps(object):
+    element_type = "small_caps"
 
 
 class comment_reference(object):

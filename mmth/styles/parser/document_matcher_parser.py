@@ -24,7 +24,16 @@ def parse_document_matcher(tokens):
             style_id=style_id,
             style_name=style_name,
         )
-    
+
+    elif tokens.try_skip(TokenType.IDENTIFIER, "table"):
+        style_id = try_parse_class_name(tokens)
+        style_name = _parse_style_name(tokens)
+
+        return document_matchers.table(
+            style_id=style_id,
+            style_name=style_name,
+        )
+
     elif tokens.try_skip(TokenType.IDENTIFIER, "b"):
         return document_matchers.bold
     
@@ -36,6 +45,9 @@ def parse_document_matcher(tokens):
     
     elif tokens.try_skip(TokenType.IDENTIFIER, "strike"):
         return document_matchers.strikethrough
+    
+    elif tokens.try_skip(TokenType.IDENTIFIER, "small-caps"):
+        return document_matchers.small_caps
     
     elif tokens.try_skip(TokenType.IDENTIFIER, "comment-reference"):
         return document_matchers.comment_reference
