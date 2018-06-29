@@ -43,8 +43,7 @@ class ImageWriter(object):
         if _DEBUG_:
             print('Processing {}'.format(image_filename))
 
-        if prefs['convertWMF'] and element.content_type in _wmf_extensions:
-            print("processing an emf image")
+        if prefs['convertWMF'] == True and element.content_type in _wmf_extensions:
             extension = _wmf_extensions.get(element.content_type)
             image_filename = 'img{0}.png'.format(self._image_number)
             if sys.platform.startswith('win'):
@@ -79,8 +78,35 @@ def make_temp_directory():
     yield temp_dir
     shutil.rmtree(temp_dir)
 
-def pil_wmf_conversion(image):
-    return
+def pil_wmf_conversion(img, post_process=None):
+    from PIL import Image
+
+    if post_process is None:
+        post_process = lambda x: x
+
+    wmf_extension = _wmf_extensions.get(img.content_type)
+    temporary_directory = tempfile.mkdtemp()
+    try:
+        input_path = os.path.join(temporary_directory, "image" + wmf_extension)
+        with io.open(input_path, "wb") as input_fileobj:
+            with img.open() as image_fileobj:
+                shutil.copyfileobj(image_fileobj, input_fileobj)
+
+        output_path = os.path.join(temporary_directory, "image.png")
+        Image.open(input_path).convert("RGB").save(output_path)
+
+        with io.open(output_path, "rb") as output_fileobj:
+            output = output_fileobj.read()
+
+        def open_image():
+            return io.BytesIO(output)
+
+        return post_process(img.copy(
+            content_type="image/png",
+            open=open_image,
+        ))
+    finally:
+        shutil.rmtree(temporary_directory)
 
 def libreoffice_wmf_conversion(image, post_process=None):
     if post_process is None:
