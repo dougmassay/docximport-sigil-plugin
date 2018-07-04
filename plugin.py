@@ -18,9 +18,16 @@ from htmlformat import build_html
 
 
 _DEBUG_ = False
-_wmf_extensions = {
-    "image/x-wmf": ".wmf",
-    "image/x-emf": ".emf",
+
+_wmf_mimetypes = ["image/x-wmf", "image/x-emf"]
+
+_img_extensions = {
+    "image/gif"     : "gif",
+    "image/jpeg"    : "jpg",
+    "image/png"     : "png",
+    "image/svg+xml" : "svg",
+    "image/x-wmf"   : "wmf",
+    "image/x-emf"   : "emf"
 }
 
 prefs = {}
@@ -38,28 +45,22 @@ class ImageWriter(object):
     def __call__(self, element):
         global img_map
         print("processing an image")
-        extension = original_ext = element.content_type.partition("/")[2]
+        if element.content_type in _img_extensions:
+            extension = _img_extensions.get(element.content_type)
+        else:
+            extension = element.content_type.partition("/")[2]
         image_filename = original_filename = 'img{0}.{1}'.format(self._image_number, extension)
         if _DEBUG_:
             print('Processing {}'.format(image_filename))
 
-        if prefs['convertWMF'] == True and element.content_type in _wmf_extensions:
-            extension = _wmf_extensions.get(element.content_type)
+        if prefs['convertWMF'] == True and element.content_type in _wmf_mimetypes:
             image_filename = 'img{0}.png'.format(self._image_number)
-            if sys.platform.startswith('win'):
-                try:
-                    image = pil_wmf_conversion(element)
-                except:
-                    image = element
-                    extension = original_ext
-                    image_filename = original_filename
-            else:
-                try:
-                    image = libreoffice_wmf_conversion(element, post_process=imagemagick_trim)
-                except:
-                    image = element
-                    extension = original_ext
-                    image_filename = original_filename
+
+            try:
+                image = libreoffice_wmf_conversion(element, post_process=imagemagick_trim)
+            except:
+                image = element
+                image_filename = original_filename
         else:
             image = element
                 
@@ -78,51 +79,24 @@ def make_temp_directory():
     yield temp_dir
     shutil.rmtree(temp_dir)
 
-def pil_wmf_conversion(img, post_process=None):
-    from PIL import Image
-
-    if post_process is None:
-        post_process = lambda x: x
-
-    wmf_extension = _wmf_extensions.get(img.content_type)
-    temporary_directory = tempfile.mkdtemp()
-    try:
-        input_path = os.path.join(temporary_directory, "image" + wmf_extension)
-        with io.open(input_path, "wb") as input_fileobj:
-            with img.open() as image_fileobj:
-                shutil.copyfileobj(image_fileobj, input_fileobj)
-
-        output_path = os.path.join(temporary_directory, "image.png")
-        Image.open(input_path).convert("RGB").save(output_path)
-
-        with io.open(output_path, "rb") as output_fileobj:
-            output = output_fileobj.read()
-
-        def open_image():
-            return io.BytesIO(output)
-
-        return post_process(img.copy(
-            content_type="image/png",
-            open=open_image,
-        ))
-    finally:
-        shutil.rmtree(temporary_directory)
-
 def libreoffice_wmf_conversion(image, post_process=None):
     if post_process is None:
         post_process = lambda x: x
     
-    wmf_extension = _wmf_extensions.get(image.content_type)
+    wmf_extension = _img_extensions.get(image.content_type)
     temporary_directory = tempfile.mkdtemp()
     try:
-        input_path = os.path.join(temporary_directory, "image" + wmf_extension)
+        input_path = os.path.join(temporary_directory, "image." + wmf_extension)
         with io.open(input_path, "wb") as input_fileobj:
             with image.open() as image_fileobj:
                 shutil.copyfileobj(image_fileobj, input_fileobj)
         
         output_path = os.path.join(temporary_directory, "image.png")
+        libreoffice = "libreoffice"
+        if sys.platform.startswith('win'):
+            libreoffice = "soffice.exe"
         subprocess.check_call([
-            "libreoffice",
+            libreoffice,
             "--headless",
             "--convert-to",
             "png",
@@ -145,7 +119,13 @@ def libreoffice_wmf_conversion(image, post_process=None):
         shutil.rmtree(temporary_directory)
 
 def imagemagick_trim(image):
-    command = ["convert", "-", "-trim", "-"]
+    if sys.platform.startswith('win'):
+        exe = "convert.exe"
+        if prefs['imageMagickPath'] != '':
+            exe = os.path.join(prefs['imageMagickPath'], "convert.exe")
+        command = [exe, "-", "-trim", "-"]
+    else:
+        command = ["convert", "-", "-trim", "-"]
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     try:
         with image.open() as image_fileobj:
@@ -217,6 +197,8 @@ def run(bk):
         prefs['useCssPath'] = ''
     if 'convertWMF' not in prefs:
         prefs['convertWMF'] = False
+    if 'imageMagickPath' not in prefs:
+        prefs['imageMagickPath'] = ''
     if 'lastDocxPath' not in prefs:
         prefs['lastDocxPath'] = ''
     if 'debug' not in prefs:
