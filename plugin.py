@@ -33,6 +33,9 @@ _img_extensions = {
 prefs = {}
 img_map = None
 
+def wmf_prereqs_met():
+    return (prefs['libreOfficePath'] != '' and prefs['imageMagickPath'] != '')
+
 
 class ImageWriter(object):
     def __init__(self, output_dir):
@@ -53,7 +56,7 @@ class ImageWriter(object):
         if _DEBUG_:
             print('Processing {}'.format(image_filename))
 
-        if prefs['convertWMF'] == True and element.content_type in _wmf_mimetypes:
+        if prefs['convertWMF'] == True and wmf_prereqs_met() and element.content_type in _wmf_mimetypes:
             image_filename = 'img{0}.png'.format(self._image_number)
 
             try:
@@ -92,11 +95,11 @@ def libreoffice_wmf_conversion(image, post_process=None):
                 shutil.copyfileobj(image_fileobj, input_fileobj)
         
         output_path = os.path.join(temporary_directory, "image.png")
-        libreoffice = "libreoffice"
-        if sys.platform.startswith('win'):
-            libreoffice = "soffice.exe"
+        #libreoffice = "libreoffice"
+        #if sys.platform.startswith('win'):
+        #    libreoffice = "soffice.exe"
         subprocess.check_call([
-            libreoffice,
+            prefs['libreOfficePath'],
             "--headless",
             "--convert-to",
             "png",
@@ -119,13 +122,15 @@ def libreoffice_wmf_conversion(image, post_process=None):
         shutil.rmtree(temporary_directory)
 
 def imagemagick_trim(image):
+    '''
     if sys.platform.startswith('win'):
         exe = "convert.exe"
         if prefs['imageMagickPath'] != '':
             exe = os.path.join(prefs['imageMagickPath'], "convert.exe")
         command = [exe, "-", "-trim", "-"]
     else:
-        command = ["convert", "-", "-trim", "-"]
+    '''
+    command = [prefs['imageMagickPath'], "-", "-trim", "-"]
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     try:
         with image.open() as image_fileobj:
@@ -195,14 +200,33 @@ def run(bk):
         prefs['useCss'] = False
     if 'useCssPath' not in prefs:
         prefs['useCssPath'] = ''
-    if 'convertWMF' not in prefs:
-        prefs['convertWMF'] = False
+    if 'libreOfficePath' not in prefs:
+        cmd = 'libreoffice'
+        if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
+            cmd = 'soffice'
+            if sys.platform.startswith('win'):
+                cmd = '{}.exe'.format(cmd)
+        tmppath = shutil.which(cmd)
+        if tmppath is not None:
+            prefs['libreOfficePath'] = tmppath
+        else:
+            prefs['libreOfficePath'] = ''
     if 'imageMagickPath' not in prefs:
-        prefs['imageMagickPath'] = ''
+        cmd = 'convert'
+        if sys.platform.startswith('win'):
+            cmd = '{}.exe'.format(cmd)
+        tmppath = shutil.which(cmd)
+        if tmppath is not None:
+            prefs['imageMagickPath'] = tmppath
+        else:
+            prefs['imageMagickPath'] = ''
     if 'lastDocxPath' not in prefs:
         prefs['lastDocxPath'] = ''
     if 'debug' not in prefs:
         prefs['debug'] = False
+    if 'convertWMF' not in prefs:
+        #prefs['convertWMF'] = (prefs['libreOfficePath'] != '' and prefs['imageMagickPath'] != '')
+        prefs['convertWMF'] = wmf_prereqs_met()
 
     _DEBUG_ = prefs['debug']
 
