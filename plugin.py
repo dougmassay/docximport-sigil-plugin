@@ -16,6 +16,17 @@ from htmlformat import build_html
 
 _DEBUG_ = False
 
+_wmf_mimetypes = ["image/x-wmf", "image/x-emf"]
+
+_img_extensions = {
+    "image/gif"     : "gif",
+    "image/jpeg"    : "jpg",
+    "image/png"     : "png",
+    "image/svg+xml" : "svg",
+    "image/x-wmf"   : "wmf",
+    "image/x-emf"   : "emf"
+}
+
 prefs = {}
 img_map = None
 
@@ -28,10 +39,16 @@ class ImageWriter(object):
 
     def __call__(self, element):
         global img_map
-        extension = element.content_type.partition("/")[2]
+        print("processing an image")
+        if element.content_type in _img_extensions:
+            extension = _img_extensions.get(element.content_type)
+        else:
+            extension = element.content_type.partition("/")[2]
         image_filename = 'img{0}.{1}'.format(self._image_number, extension)
         if _DEBUG_:
             print('Processing {}'.format(image_filename))
+        if element.content_type in _wmf_mimetypes:
+            print('WARNING: wmf/emf images are unsupported -- image won\'t be included in the epub!')
         with open(os.path.join(self._output_dir, image_filename), 'wb') as image_dest:
             with element.open() as image_source:
                 shutil.copyfileobj(image_source, image_dest)
