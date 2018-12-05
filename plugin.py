@@ -5,10 +5,7 @@ from __future__ import unicode_literals, division, absolute_import, print_functi
 
 import os
 import sys
-import io
 import shutil
-import tempfile
-import subprocess
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 
@@ -19,137 +16,39 @@ from htmlformat import build_html
 
 _DEBUG_ = False
 
-_wmf_mimetypes = ["image/x-wmf", "image/x-emf"]
-
-_img_extensions = {
-    "image/gif"     : "gif",
-    "image/jpeg"    : "jpg",
-    "image/png"     : "png",
-    "image/svg+xml" : "svg",
-    "image/x-wmf"   : "wmf",
-    "image/x-emf"   : "emf"
-}
-
 prefs = {}
 img_map = None
-
-def wmf_prereqs_met():
-    return (prefs['libreOfficePath'] != '' and prefs['imageMagickPath'] != '')
-
 
 class ImageWriter(object):
     def __init__(self, output_dir):
         global img_map
-        global prefs
         img_map = {}
         self._output_dir = output_dir
         self._image_number = 1
 
     def __call__(self, element):
         global img_map
-        print("processing an image")
-        if element.content_type in _img_extensions:
-            extension = _img_extensions.get(element.content_type)
-        else:
-            extension = element.content_type.partition("/")[2]
-        image_filename = original_filename = 'img{0}.{1}'.format(self._image_number, extension)
+        extension = element.content_type.partition("/")[2]
+        image_filename = 'img{0}.{1}'.format(self._image_number, extension)
         if _DEBUG_:
             print('Processing {}'.format(image_filename))
-
-        if prefs['convertWMF'] == True and wmf_prereqs_met() and element.content_type in _wmf_mimetypes:
-            image_filename = 'img{0}.png'.format(self._image_number)
-
-            try:
-                image = libreoffice_wmf_conversion(element, post_process=imagemagick_trim)
-            except:
-                image = element
-                image_filename = original_filename
-        else:
-            image = element
-                
         with open(os.path.join(self._output_dir, image_filename), 'wb') as image_dest:
-            with image.open() as image_source:
+            with element.open() as image_source:
                 shutil.copyfileobj(image_source, image_dest)
 
         self._image_number += 1
         image_src = '../Images/{0}'.format(image_filename)
-        img_map[image_filename] = image.content_type
+        img_map[image_filename] = element.content_type
         return {'src': image_src}
+
 
 @contextmanager
 def make_temp_directory():
+    import tempfile
+    import shutil
     temp_dir = tempfile.mkdtemp()
     yield temp_dir
     shutil.rmtree(temp_dir)
-
-def libreoffice_wmf_conversion(image, post_process=None):
-    if post_process is None:
-        post_process = lambda x: x
-    
-    wmf_extension = _img_extensions.get(image.content_type)
-    temporary_directory = tempfile.mkdtemp()
-    try:
-        input_path = os.path.join(temporary_directory, "image." + wmf_extension)
-        with io.open(input_path, "wb") as input_fileobj:
-            with image.open() as image_fileobj:
-                shutil.copyfileobj(image_fileobj, input_fileobj)
-        
-        output_path = os.path.join(temporary_directory, "image.png")
-        #libreoffice = "libreoffice"
-        #if sys.platform.startswith('win'):
-        #    libreoffice = "soffice.exe"
-        subprocess.check_call([
-            prefs['libreOfficePath'],
-            "--headless",
-            "--convert-to",
-            "png",
-            input_path,
-            "--outdir",
-            temporary_directory,
-        ])
-        
-        with io.open(output_path, "rb") as output_fileobj:
-            output = output_fileobj.read()
-        
-        def open_image():
-            return io.BytesIO(output)
-        
-        return post_process(image.copy(
-            content_type="image/png",
-            open=open_image,
-        ))
-    finally:
-        shutil.rmtree(temporary_directory)
-
-def imagemagick_trim(image):
-    '''
-    if sys.platform.startswith('win'):
-        exe = "convert.exe"
-        if prefs['imageMagickPath'] != '':
-            exe = os.path.join(prefs['imageMagickPath'], "convert.exe")
-        command = [exe, "-", "-trim", "-"]
-    else:
-    '''
-    command = [prefs['imageMagickPath'], "-", "-trim", "-"]
-    process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    try:
-        with image.open() as image_fileobj:
-            shutil.copyfileobj(image_fileobj, process.stdin)
-        output, err_output = process.communicate()
-    except:
-        process.kill()
-        process.wait()
-        raise
-        
-    return_code = process.poll()
-    if return_code:
-        raise subprocess.CalledProcessError(return_code, command)
-    else:
-        def open_image():
-            return io.BytesIO(output)
-        
-        return image.copy(open=open_image)
-
 
 def run(bk):
     global prefs
@@ -200,33 +99,10 @@ def run(bk):
         prefs['useCss'] = False
     if 'useCssPath' not in prefs:
         prefs['useCssPath'] = ''
-    if 'libreOfficePath' not in prefs:
-        cmd = 'libreoffice'
-        if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
-            cmd = 'soffice'
-            if sys.platform.startswith('win'):
-                cmd = '{}.exe'.format(cmd)
-        tmppath = shutil.which(cmd)
-        if tmppath is not None:
-            prefs['libreOfficePath'] = tmppath
-        else:
-            prefs['libreOfficePath'] = ''
-    if 'imageMagickPath' not in prefs:
-        cmd = 'convert'
-        if sys.platform.startswith('win'):
-            cmd = '{}.exe'.format(cmd)
-        tmppath = shutil.which(cmd)
-        if tmppath is not None:
-            prefs['imageMagickPath'] = tmppath
-        else:
-            prefs['imageMagickPath'] = ''
     if 'lastDocxPath' not in prefs:
         prefs['lastDocxPath'] = ''
     if 'debug' not in prefs:
         prefs['debug'] = False
-    if 'convertWMF' not in prefs:
-        #prefs['convertWMF'] = (prefs['libreOfficePath'] != '' and prefs['imageMagickPath'] != '')
-        prefs['convertWMF'] = wmf_prereqs_met()
 
     _DEBUG_ = prefs['debug']
 
