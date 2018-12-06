@@ -55,8 +55,11 @@ class ImageWriter(object):
 
         self._image_number += 1
         image_src = '../Images/{0}'.format(image_filename)
+        image_alt = ''
+        if element.alt_text:
+            image_alt = element.alt_text
         img_map[image_filename] = element.content_type
-        return {'src': image_src}
+        return {'alt': image_alt, 'src': image_src}
 
 
 @contextmanager
