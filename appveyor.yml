@@ -4,7 +4,7 @@ branches:
   - master
   - /v\d+\.\d+\.\d+(-\d+)?/
   
-clone_folder: c:\project\appveyor_testing
+clone_folder: c:\project\docximport
 
 image:
 - Visual Studio 2017
