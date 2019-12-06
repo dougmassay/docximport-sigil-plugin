@@ -6,11 +6,10 @@ from __future__ import unicode_literals, division, absolute_import, print_functi
 import sys
 import os
 import webbrowser
-import binascii
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit, QGroupBox,
                              QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy, QDialogButtonBox, QButtonGroup)
-from PyQt5.QtCore import pyqtSlot, QCoreApplication, Qt
+from PyQt5.QtCore QCoreApplication, Qt, QByteArray
 
 from updatecheck import UpdateChecker, DOWNLOAD_PAGE
 
@@ -167,7 +166,10 @@ class App(QWidget):
         main_layout.addWidget(button_box)
         self.retranslateUi(self)
         if self.prefs['qt_geometry'] is not None:
-            self.restoreGeometry(binascii.a2b_base64(self.prefs['qt_geometry'].encode('ascii')))
+            try:
+                self.restoreGeometry(QByteArray.fromHex(self.prefs['qt_geometry'].encode('ascii')))
+            except:
+                pass
         self.show()
 
     def retranslateUi(self, App):
@@ -205,7 +207,7 @@ class App(QWidget):
 
     def cmdDo(self):
         global _DETAILS
-        self.prefs['qt_geometry'] = binascii.b2a_base64(self.saveGeometry()).decode('ascii')
+        self.prefs['qt_geometry'] = self.saveGeometry().toHex().data().decode('ascii')
         self.prefs['check_for_updates'] = self.checkbox_get_updates.isChecked()
         self.prefs['epub_version'] = self.epubType.checkedButton().text()[-1] + '.0'
         self.prefs['debug'] = self.checkbox_debug.isChecked()
@@ -252,18 +254,16 @@ class App(QWidget):
             url = url + latest
         webbrowser.open_new_tab(url)
 
-    @pyqtSlot()
     def _ok_clicked(self):
         self._ok_to_close = True
         self.cmdDo()
         self.bk.savePrefs(self.prefs)
         QCoreApplication.instance().quit()
 
-    @pyqtSlot()
     def _cancel_clicked(self):
         self._ok_to_close = True
         '''Close aborting any changes'''
-        self.prefs['qt_geometry'] = binascii.b2a_base64(self.saveGeometry()).decode('ascii')
+        self.prefs['qt_geometry'] = self.saveGeometry().toHex().data().decode('ascii')
         self.prefs['check_for_updates'] = self.checkbox_get_updates.isChecked()
         self.prefs['debug'] = self.checkbox_debug.isChecked()
         self.bk.savePrefs(self.prefs)
