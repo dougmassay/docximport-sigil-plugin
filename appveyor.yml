@@ -37,7 +37,7 @@ before_build:
 build_script:
 - cmd: |-
     set PATH=%PYTHON%;%QT%\bin;%PATH%
-    python buildplugin
+    python buildplugin --language
  
 
 artifacts:

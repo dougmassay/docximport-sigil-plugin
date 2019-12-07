@@ -12,6 +12,7 @@ import subprocess
 import shutil
 import inspect
 import zipfile
+import optparse
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -88,6 +89,12 @@ def ignore_in_dirs(base, items, ignored_dirs=None):
 
 
 if __name__ == "__main__":
+    parser = optparse.OptionParser()
+    parser.add_option('-l', '--language',
+                  dest="compile_lang",
+                  default=False,
+                  action="store_true")
+    options, args = parser.parse_args()
     print('Removing any previous build leftovers ...')
     removePreviousTmp(rmzip=True)
 
@@ -104,18 +111,19 @@ if __name__ == "__main__":
         else:
             sys.exit('Couldn\'t copy necessary plugin files!')
     os.mkdir(TRANS_DEST)
-    if os.path.exists(TRANS_SRC) and os.path.isdir(TRANS_SRC):
-        for name in os.listdir(TRANS_SRC):
-            if name !='base.ts' and name.rpartition('.')[-1] == ('ts'):
-                ts_name = os.path.join(TRANS_SRC, name)
-                qm_name = '{}.{}'.format(os.path.join(TRANS_DEST, os.path.splitext(name)[0]), 'qm')
-                command = ['lrelease',
-                           ts_name,
-                           '-qm',
-                           qm_name
-                           ]
-                print('Compiling {} with lrelease'.format(name))
-                proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    if options.compile_lang:
+        if os.path.exists(TRANS_SRC) and os.path.isdir(TRANS_SRC):
+            for name in os.listdir(TRANS_SRC):
+                if name !='base.ts' and name.rpartition('.')[-1] == ('ts'):
+                    ts_name = os.path.join(TRANS_SRC, name)
+                    qm_name = '{}.{}'.format(os.path.join(TRANS_DEST, os.path.splitext(name)[0]), 'qm')
+                    command = ['lrelease',
+                               ts_name,
+                               '-qm',
+                               qm_name
+                               ]
+                    print('Compiling {} with lrelease'.format(name))
+                    proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
     print('Creating {} ...'.format(os.path.basename(ARCHIVE_NAME)))
     outzip = zipfile.ZipFile(ARCHIVE_NAME, 'w')

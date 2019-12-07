@@ -20,13 +20,15 @@ Building
 
 First, clone the repo:
 
-    $ git clone https://github.com/dougmassay/docximport-sigil-plugin.git
+`$git clone https://github.com/dougmassay/docximport-sigil-plugin.git`
 
-To create the plugin zip file, run the buildplugin.py script (root of the repository tree) with Python (2 or 3)
+To create the plugin zip file, run the buildplugin.py script (root of the repository tree) with Python (Python3-only)
 
-    $python buildplugin (or just ./buildplugin if Python is in your path)
+`$python buildplugin` (or just ./buildplugin if Python is in your path)
 
 This will create the DOCXImport_vX.X.X.zip file that can then be installed into Sigil's plugin manager.
+
+`$python buildplugin -l` (or --language) to compile any language files (.ts) and the .qm files to the plugin (Qt's lrelease must be installed and on your PATH for this to work).
 
 Using DOCXImport
 =================
@@ -36,7 +38,7 @@ Linux users will have to make sure that the Tk or PyQt5 graphical python module 
 
 * **Note:** Do not rename any Sigil plugin zip files before attempting to install them
 
-This plugin will work with either Python 3.4+ or Python 2.7+ (defaults to 3.x if both are present).
+This plugin will work with either Python 3.4+.
 The absolute minimum version of Sigil required is v0.8.3 (Python must be installed separately prior to v0.9.0)
 
 Get more help at the DOCXImport plugin [MobileRead support thread.](http://www.mobileread.com/forums/showthread.php?t=273966)
@@ -72,6 +74,8 @@ Files used for building/maintaining the plugin:
 
 
 Feel free to fork the repository and submit pull requests (or just use it privately to experiment).
+
+Would you like to contribute to the translating of DOCXImport? Copy the base.ts file from the translation folder, rename it to 'docximport_(your_locale).ts' (ex. docximport_fr.ts for French) and complete it with Qt's Linguist program. Use a pull requet with the completed ts file added to get it into the official releases.
 
 
 
