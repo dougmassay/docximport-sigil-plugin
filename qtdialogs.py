@@ -9,7 +9,7 @@ import webbrowser
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit, QGroupBox,
                              QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy, QDialogButtonBox, QButtonGroup)
-from PyQt5.QtCore QCoreApplication, Qt, QByteArray
+from PyQt5.QtCore import QCoreApplication, Qt, QByteArray
 
 from updatecheck import UpdateChecker, DOWNLOAD_PAGE
 
