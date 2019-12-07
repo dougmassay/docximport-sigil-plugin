@@ -63,8 +63,8 @@ class App(QWidget):
             qmf = '{}_{}'.format(bk._w.plugin_name.lower(), prefs['language_override'])
         else:
             qmf = '{}_{}'.format(bk._w.plugin_name.lower(), bk.sigil_ui_lang)
-        print(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'ts'))
-        plugin_translator.load(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'ts'))
+        print(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'translations'))
+        plugin_translator.load(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'translations'))
         print(QCoreApplication.instance().installTranslator(plugin_translator))
 
         self._ok_to_close = False
@@ -95,6 +95,7 @@ class App(QWidget):
     def initUI(self):
         main_layout = QVBoxLayout(self)
 
+        self.setWindowTitle('DOCXImport')
         self.upd_layout = QVBoxLayout()
         self.update_label = QLabel()
         self.update_label.setAlignment(Qt.AlignCenter)
