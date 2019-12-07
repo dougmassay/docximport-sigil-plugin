@@ -24,6 +24,7 @@ init:
 environment:
   global:
     PYTHON: C:\Python37-x64
+    QT: C:\Qt\5.13\msvc2017_64
 
 
 before_build:
@@ -35,7 +36,7 @@ before_build:
     
 build_script:
 - cmd: |-
-    set PATH=%PYTHON%;%PATH%
+    set PATH=%PYTHON%;%QT%\bin;%PATH%
     python buildplugin
  
 
