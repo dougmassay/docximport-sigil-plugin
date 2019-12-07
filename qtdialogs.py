@@ -9,7 +9,7 @@ import webbrowser
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit, QGroupBox,
                              QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy, QDialogButtonBox, QButtonGroup)
-from PyQt5.QtCore import QCoreApplication, Qt, QByteArray
+from PyQt5.QtCore import QCoreApplication, Qt, QByteArray, QTranslator, QLibraryInfo
 
 from updatecheck import UpdateChecker, DOWNLOAD_PAGE
 
@@ -24,13 +24,27 @@ _DETAILS = {
 
 def launch_qt_gui(bk, prefs):
     app = QApplication(sys.argv)
+ 
+    # Install qtbase translator for standard dialogs and such.
+    # Use the Sigil language setting unless manually overridden.
+    qt_translator = QTranslator()
+    if prefs['language_override'] is not None:
+        print('Plugin preferences language override in effect')
+        qmf = 'qtbase_{}'.format(prefs['language_override'])
+    else:
+        qmf = 'qtbase_{}'.format(bk.sigil_ui_lang)
+    # We don't need Sigil's translations files, so use whatever location Qt
+    # reports as its translations folder. Should work whether package or system;
+    # or bundled PyQt5 or externally installed.
+    print(qmf, QLibraryInfo.location(QLibraryInfo.TranslationsPath))
+    qt_translator.load(qmf, QLibraryInfo.location(QLibraryInfo.TranslationsPath))
+    print(app.installTranslator(qt_translator))
+
     ex = App(bk, prefs)
     ex.show()
     app.exec_()
     return _DETAILS
 
-
-# No translation currently taking place, but it doesn't hurt to get a head start.
 _translate = QCoreApplication.translate
 
 class App(QWidget):
@@ -40,6 +54,19 @@ class App(QWidget):
         self.bk = bk
         self.prefs = prefs
         self.update = False
+
+        # Install translator for the DOCXImport plugin dialog.
+        # Use the Sigil language setting unless manually overridden.
+        plugin_translator = QTranslator()
+        if prefs['language_override'] is not None:
+            print('Plugin preferences language override in effect')
+            qmf = '{}_{}'.format(bk._w.plugin_name.lower(), prefs['language_override'])
+        else:
+            qmf = '{}_{}'.format(bk._w.plugin_name.lower(), bk.sigil_ui_lang)
+        print(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'ts'))
+        plugin_translator.load(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'ts'))
+        print(QCoreApplication.instance().installTranslator(plugin_translator))
+
         self._ok_to_close = False
 
         self.FTYPE_MAP = {
@@ -173,8 +200,6 @@ class App(QWidget):
         self.show()
 
     def retranslateUi(self, App):
-        # No translation currently taking place, but it doesn't hurt to get a head start.
-        self.setWindowTitle(_translate('App', 'DOCXImport'))
         self.update_label.setText(_translate('App', 'Plugin Update Available'))
         self.get_update_button.setText(_translate('App', 'Go to download page'))
         self.checkbox_get_updates.setText(_translate('App', 'Check for plugin updates'))
@@ -184,13 +209,12 @@ class App(QWidget):
         self.checkbox_debug.setText(_translate('App', 'Debug Mode (change takes effect next plugin run)'))
 
     def fileChooser(self, ftype, qlineedit, qcheck=None, qbutton=None):
-        _translate = QCoreApplication.translate
         options =  QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         title = self.FTYPE_MAP[ftype]['title']
         startfolder = self.prefs['lastDir'][ftype]
         ffilter = self.FTYPE_MAP[ftype]['filetypes']
-        inpath, _ = QFileDialog.getOpenFileName(self, _translate('APP', title), startfolder, ffilter, options=options)
+        inpath, _ = QFileDialog.getOpenFileName(self, title, startfolder, ffilter, options=options)
         if len(inpath):
             qlineedit.setEnabled(True)
             qlineedit.setText(os.path.normpath(inpath))

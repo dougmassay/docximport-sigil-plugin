@@ -8,6 +8,7 @@ from __future__ import (unicode_literals, division, absolute_import,
 import os
 import sys
 import re
+import subprocess
 import shutil
 import inspect
 import zipfile
@@ -16,6 +17,9 @@ import zipfile
 SCRIPT_DIR = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 PLUGIN_NAME = 'DOCXImport'
 TEMP_DIR = os.path.join(SCRIPT_DIR, PLUGIN_NAME)
+TRANS_NAME = 'translations'
+TRANS_SRC = os.path.join(SCRIPT_DIR, TRANS_NAME)
+TRANS_DEST = os.path.join(SCRIPT_DIR, PLUGIN_NAME, TRANS_NAME)
 
 PLUGIN_FILES = ['mmth',
             'cbbl',
@@ -99,6 +103,19 @@ if __name__ == "__main__":
             shutil.copy2(entry_path, os.path.join(TEMP_DIR, entry))
         else:
             sys.exit('Couldn\'t copy necessary plugin files!')
+    os.mkdir(TRANS_DEST)
+    if os.path.exists(TRANS_SRC) and os.path.isdir(TRANS_SRC):
+        for name in os.listdir(TRANS_SRC):
+            if name !='base.ts' and name.rpartition('.')[-1] == ('ts'):
+                ts_name = os.path.join(TRANS_SRC, name)
+                qm_name = '{}.{}'.format(os.path.join(TRANS_DEST, os.path.splitext(name)[0]), 'qm')
+                command = ['lrelease',
+                           ts_name,
+                           '-qm',
+                           qm_name
+                           ]
+                print('Compiling {} with lrelease'.format(name))
+                proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
     print('Creating {} ...'.format(os.path.basename(ARCHIVE_NAME)))
     outzip = zipfile.ZipFile(ARCHIVE_NAME, 'w')
