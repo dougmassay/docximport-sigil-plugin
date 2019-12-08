@@ -21,10 +21,21 @@ _DETAILS = {
     'vers'   : '2.0',
 }
 
+def getQtTranslationsPath(sigil_path):
+    isBundled = 'sigil' in sys.prefix.lower()
+    print('Python is Bundled: {}'.format(isBundled))
+    if isBundled:
+        if sys.platform.lower().startswith('darwin'):
+            return os.path.normpath(sigil_path + '/../translations')
+        else:
+            return os.path.join(sigil_path, 'translations')
+    else:
+        return QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+
 
 def launch_qt_gui(bk, prefs):
     app = QApplication(sys.argv)
- 
+    print('Application dir: {}'.format(QCoreApplication.applicationDirPath()))
     # Install qtbase translator for standard dialogs and such.
     # Use the Sigil language setting unless manually overridden.
     qt_translator = QTranslator()
@@ -33,12 +44,12 @@ def launch_qt_gui(bk, prefs):
         qmf = 'qtbase_{}'.format(prefs['language_override'])
     else:
         qmf = 'qtbase_{}'.format(bk.sigil_ui_lang)
-    # We don't need Sigil's translations files, so use whatever location Qt
-    # reports as its translations folder. Should work whether package or system;
-    # or bundled PyQt5 or externally installed.
-    print(qmf, QLibraryInfo.location(QLibraryInfo.TranslationsPath))
-    qt_translator.load(qmf, QLibraryInfo.location(QLibraryInfo.TranslationsPath))
-    print(app.installTranslator(qt_translator))
+    # Get bundled or external translations directory
+    qt_trans_dir = getQtTranslationsPath(QCoreApplication.applicationDirPath())
+    print('Qt translation dir: {}'.format(qt_trans_dir))
+    print('Looking for {} in {}'.format(qmf, qt_trans_dir))
+    qt_translator.load(qmf, qt_trans_dir)
+    print('Translator succesfully installed: {}'.format(app.installTranslator(qt_translator)))
 
     ex = App(bk, prefs)
     ex.show()
