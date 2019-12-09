@@ -114,7 +114,7 @@ if __name__ == "__main__":
     if options.compile_lang:
         if os.path.exists(TRANS_SRC) and os.path.isdir(TRANS_SRC):
             for name in os.listdir(TRANS_SRC):
-                if name !='base.ts' and name.rpartition('.')[-1] == ('ts'):
+                if name !='template.ts' and name.rpartition('.')[-1] == ('ts'):
                     ts_name = os.path.join(TRANS_SRC, name)
                     qm_name = '{}.{}'.format(os.path.join(TRANS_DEST, os.path.splitext(name)[0]), 'qm')
                     command = ['lrelease',
