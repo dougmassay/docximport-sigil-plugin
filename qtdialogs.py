@@ -45,7 +45,7 @@ def launch_qt_gui(bk, prefs):
     else:
         qmf = 'qtbase_{}'.format(bk.sigil_ui_lang)
     # Get bundled or external translations directory
-    qt_trans_dir = getQtTranslationsPath(QCoreApplication.applicationDirPath())
+    qt_trans_dir = getQtTranslationsPath(bk._w.appdir)
     print('Qt translation dir: {}'.format(qt_trans_dir))
     print('Looking for {} in {}'.format(qmf, qt_trans_dir))
     qt_translator.load(qmf, qt_trans_dir)
