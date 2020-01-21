@@ -7,8 +7,10 @@ import sys
 import os
 import webbrowser
 
-from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit, QGroupBox,
-                             QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy, QDialogButtonBox, QButtonGroup)
+from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit, 
+                            QGroupBox,QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy, 
+                            QDialogButtonBox, QButtonGroup, QStyleFactory)
+from PyQt5.QtGui import QColor, QPalette
 from PyQt5.QtCore import QCoreApplication, Qt, QByteArray, QTranslator, QLibraryInfo
 
 from updatecheck import UpdateChecker, DOWNLOAD_PAGE
@@ -20,6 +22,34 @@ _DETAILS = {
     'css'    : (False, None),
     'vers'   : '2.0',
 }
+
+
+def dark_palette(sigil_colors):
+    p = QPalette()
+    dark_color = QColor(sigil_colors("Window"))
+    disabled_color = QColor(127,127,127)
+    dark_link_color = QColor(108, 180, 238)
+    text_color = QColor(sigil_colors("Text"))
+    p.setColor(p.Window, dark_color)
+    p.setColor(p.WindowText, text_color)
+    p.setColor(p.Base, QColor(sigil_colors("Base")))
+    p.setColor(p.AlternateBase, dark_color)
+    p.setColor(p.ToolTipBase, dark_color)
+    p.setColor(p.ToolTipText, text_color)
+    p.setColor(p.Text, text_color)
+    p.setColor(p.Disabled, p.Text, disabled_color)
+    p.setColor(p.Button, dark_color)
+    p.setColor(p.ButtonText, text_color)
+    p.setColor(p.Disabled, p.ButtonText, disabled_color)
+    p.setColor(p.BrightText, Qt.red)
+    p.setColor(p.Link, dark_link_color)
+
+    p.setColor(p.Highlight, QColor(sigil_colors("Highlight")))
+    p.setColor(p.HighlightedText, QColor(sigil_colors("HighlightedText")))
+    p.setColor(p.Disabled, p.HighlightedText, disabled_color)
+
+    return p
+
 
 def getQtTranslationsPath(sigil_path):
     isBundled = 'sigil' in sys.prefix.lower()
@@ -34,7 +64,14 @@ def getQtTranslationsPath(sigil_path):
 
 
 def launch_qt_gui(bk, prefs):
+    supports_theming = (bk.launcher_version() >= 20200117)
     app = QApplication(sys.argv)
+    # Make plugin match Sigil's light/dark theme
+    if supports_theming:
+        if bk.colorMode() == "dark":
+            app.setStyle(QStyleFactory.create("Fusion"))
+            app.setPalette(dark_palette(bk.color))
+
     print('Application dir: {}'.format(QCoreApplication.applicationDirPath()))
     # Install qtbase translator for standard dialogs and such.
     # Use the Sigil language setting unless manually overridden.

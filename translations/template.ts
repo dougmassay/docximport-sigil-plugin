@@ -3,52 +3,52 @@
 <context>
     <name>App</name>
     <message>
-        <location filename="../qtdialogs.py" line="85"/>
+        <location filename="../qtdialogs.py" line="122"/>
         <source>Select custom style-map file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qtdialogs.py" line="90"/>
+        <location filename="../qtdialogs.py" line="127"/>
         <source>Select custom CSS file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qtdialogs.py" line="95"/>
+        <location filename="../qtdialogs.py" line="132"/>
         <source>Select DOCX file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qtdialogs.py" line="215"/>
+        <location filename="../qtdialogs.py" line="252"/>
         <source>Plugin Update Available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qtdialogs.py" line="216"/>
+        <location filename="../qtdialogs.py" line="253"/>
         <source>Go to download page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qtdialogs.py" line="217"/>
+        <location filename="../qtdialogs.py" line="254"/>
         <source>Check for plugin updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qtdialogs.py" line="218"/>
+        <location filename="../qtdialogs.py" line="255"/>
         <source>DOCX File to import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qtdialogs.py" line="219"/>
+        <location filename="../qtdialogs.py" line="256"/>
         <source>Use Custom Style Map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qtdialogs.py" line="220"/>
+        <location filename="../qtdialogs.py" line="257"/>
         <source>Use Custom CSS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qtdialogs.py" line="221"/>
+        <location filename="../qtdialogs.py" line="258"/>
         <source>Debug Mode (change takes effect next plugin run)</source>
         <translation type="unfinished"></translation>
     </message>
