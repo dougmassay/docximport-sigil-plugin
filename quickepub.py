@@ -61,7 +61,7 @@ NCX = textwrap.dedent('''<?xml version="1.0" encoding="utf-8"?>
 </navMap>
 </ncx>''')
 
-IMG = '<item id="{0}" href="Images/{0}" media-type="{1}"/>'
+IMG = '<item id="{0}" href="{0}" media-type="{1}"/>'
 CSS = '<item id="css" href="stylesheet.css" media-type="text/css"/>'
 NCX_DOCTYPE = textwrap.dedent('''<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN"
    "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">''')
@@ -91,7 +91,7 @@ class QuickEpub(object):
         return metainf
 
     def make_opf(self):
-        opffile = os.path.join(self.outdir,'content.opf')
+        opffile = os.path.join(self.outdir, 'content.opf')
         cssmanifest = ''
         if self.cssfile is not None:
             cssmanifest = CSS
@@ -113,13 +113,14 @@ class QuickEpub(object):
             doctype = doctype.format('')
         else:
             doctype = doctype.format(NCX_DOCTYPE)
-        ncxfile = os.path.join(self.outdir,'toc.ncx')
+        ncxfile = os.path.join(self.outdir, 'toc.ncx')
         ncxdata = NCX.format(doctype, self.uid)
         open(ncxfile,'wb').write(ncxdata.encode('utf-8'))
         return ncxfile
 
     def manifest_images(self):
-        img_dir = os.path.join(self.outdir,'Images')
+        #img_dir = os.path.join(self.outdir, 'Images')
+        img_dir = self.outdir
         items = ''
         if os.path.exists(img_dir) and os.path.isdir(img_dir) and self.img_map is not None:
             for fname, mtype in self.img_map.items():

@@ -23,7 +23,7 @@ HTML = textwrap.dedent('''<?xml version="1.0" encoding="utf-8"?>
 </body>
 </html>''')
 
-LINK_TEXT = '<link href="../Styles/stylesheet.css" type="text/css" rel="stylesheet"/>'
+LINK_TEXT = '<link href="stylesheet.css" type="text/css" rel="stylesheet"/>'
 
 def build_html(fragment, css=False):
     fragment = regex.sub(r'<p([^>]*)></p>', r'<p\1>&#160;</p>', fragment)

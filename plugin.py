@@ -30,6 +30,20 @@ _img_extensions = {
 prefs = {}
 img_map = None
 
+def pyqt_available():
+    try:
+        from PyQt5.QtWidgets import QApplication
+    except ImportError:
+        return False
+    return True
+
+def pyside_available():
+    try:
+        from PySide2.QtWidgets import QApplication
+    except ImportError:
+        return False
+    return True
+
 class ImageWriter(object):
     def __init__(self, output_dir):
         global img_map
@@ -54,7 +68,7 @@ class ImageWriter(object):
                 shutil.copyfileobj(image_source, image_dest)
 
         self._image_number += 1
-        image_src = '../Images/{0}'.format(image_filename)
+        image_src = '{0}'.format(image_filename)
         image_alt = ''
         if element.alt_text:
             image_alt = element.alt_text
@@ -170,7 +184,7 @@ def run(bk):
             open(cssfile,'wb').write(css.encode('utf-8'))
 
         # Process images (if any)
-        convert_image = mmth.images.img_element(ImageWriter(img_dir))
+        convert_image = mmth.images.img_element(ImageWriter(epub_build))
 
         with open(inpath, 'rb') as docx_file:
             print('Creating html...\n')
