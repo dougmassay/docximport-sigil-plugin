@@ -7,11 +7,20 @@ import sys
 import os
 import webbrowser
 
-from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit, 
-                            QGroupBox,QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy, 
+try:
+    from PySide2.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit,
+                            QGroupBox,QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy,
                             QDialogButtonBox, QButtonGroup, QStyleFactory)
-from PyQt5.QtGui import QColor, QPalette
-from PyQt5.QtCore import QCoreApplication, Qt, QByteArray, QTranslator, QLibraryInfo
+    from PySide2.QtGui import QColor, QPalette
+    from PySide2.QtCore import QCoreApplication, Qt, QByteArray, QTranslator, QLibraryInfo
+    print('PySide2')
+except ImportError:
+    from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit,
+                            QGroupBox,QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy,
+                            QDialogButtonBox, QButtonGroup, QStyleFactory)
+    from PyQt5.QtGui import QColor, QPalette
+    from PyQt5.QtCore import QCoreApplication, Qt, QByteArray, QTranslator, QLibraryInfo
+    print('PyQt5')
 
 from updatecheck import UpdateChecker, DOWNLOAD_PAGE
 
