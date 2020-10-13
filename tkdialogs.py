@@ -267,7 +267,7 @@ class guiMain(tkinter.Frame):
         try:
             self.parent.destroy()
             self.parent.quit()
-        except:
+        except Exception:
             pass
 
     def check_for_update(self):

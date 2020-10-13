@@ -7,23 +7,28 @@ import sys
 import os
 import webbrowser
 
+
 try:
     from PySide2.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit,
                             QGroupBox,QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy,
                             QDialogButtonBox, QButtonGroup, QStyleFactory)
-    from PySide2.QtGui import QColor, QPalette
-    from PySide2.QtCore import QCoreApplication, Qt, QByteArray, QTranslator, QLibraryInfo
+    from PySide2.QtGui import QColor, QFont, QPalette
+    from PySide2.QtCore import QCoreApplication, Qt, QByteArray, QTimer, QTranslator, QLibraryInfo
     print('PySide2')
 except ImportError:
     from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit,
                             QGroupBox,QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy,
                             QDialogButtonBox, QButtonGroup, QStyleFactory)
-    from PyQt5.QtGui import QColor, QPalette
-    from PyQt5.QtCore import QCoreApplication, Qt, QByteArray, QTranslator, QLibraryInfo
+    from PyQt5.QtGui import QColor, QFont, QPalette
+    from PyQt5.QtCore import QCoreApplication, Qt, QByteArray, QTimer, QTranslator, QLibraryInfo
     print('PyQt5')
 
 from updatecheck import UpdateChecker, DOWNLOAD_PAGE
 
+
+_plat = sys.platform.lower()
+iswindows = 'win32' in _plat or 'win64' in _plat
+ismacos = isosx = 'darwin' in _plat
 
 _DETAILS = {
     'docx'   : None,
@@ -60,6 +65,26 @@ def dark_palette(sigil_colors):
     return p
 
 
+def setup_highdpi(highdpi):
+    has_env_setting = False
+    env_vars = ('QT_AUTO_SCREEN_SCALE_FACTOR', 'QT_SCALE_FACTOR', 'QT_SCREEN_SCALE_FACTORS', 'QT_DEVICE_PIXEL_RATIO')
+    for v in env_vars:
+        if os.environ.get(v):
+            has_env_setting = True
+            break
+    if highdpi == 'on' or (highdpi == 'detect' and not has_env_setting):
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+    elif highdpi == 'off':
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, False)
+        for p in env_vars:
+            os.environ.pop(p, None)
+
+def setup_ui_font(font_str):
+    font = QFont()
+    font.fromString(font_str)
+    QApplication.setFont(font)
+
+
 def getQtTranslationsPath(sigil_path):
     isBundled = 'sigil' in sys.prefix.lower()
     print('Python is Bundled: {}'.format(isBundled))
@@ -74,6 +99,13 @@ def getQtTranslationsPath(sigil_path):
 
 def launch_qt_gui(bk, prefs):
     supports_theming = (bk.launcher_version() >= 20200117)
+    if not ismacos:
+        setup_highdpi(bk._w.highdpi)
+    setup_ui_font(bk._w.uifont)
+    if not ismacos and not iswindows:
+        # Qt 5.10.1 on Linux resets the global font on first event loop tick.
+        # So workaround it by setting the font once again in a timer.
+        QTimer.singleShot(0, lambda : setup_ui_font(bk._w.uifont))
     app = QApplication(sys.argv)
     # Make plugin match Sigil's light/dark theme
     if supports_theming:
@@ -102,7 +134,9 @@ def launch_qt_gui(bk, prefs):
     app.exec_()
     return _DETAILS
 
+
 _translate = QCoreApplication.translate
+
 
 class App(QWidget):
     def __init__(self, bk, prefs):
@@ -253,7 +287,7 @@ class App(QWidget):
         if self.prefs['qt_geometry'] is not None:
             try:
                 self.restoreGeometry(QByteArray.fromHex(self.prefs['qt_geometry'].encode('ascii')))
-            except:
+            except Exception:
                 pass
         self.show()
 

@@ -119,7 +119,7 @@ class QuickEpub(object):
         return ncxfile
 
     def manifest_images(self):
-        #img_dir = os.path.join(self.outdir, 'Images')
+        # img_dir = os.path.join(self.outdir, 'Images')
         img_dir = self.outdir
         items = ''
         if os.path.exists(img_dir) and os.path.isdir(img_dir) and self.img_map is not None:
