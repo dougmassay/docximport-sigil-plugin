@@ -32,14 +32,14 @@ img_map = None
 
 def pyqt_available():
     try:
-        from PyQt5.QtWidgets import QApplication
+        from PyQt5.QtWidgets import QApplication  # noqa 
     except ImportError:
         return False
     return True
 
 def pyside_available():
     try:
-        from PySide2.QtWidgets import QApplication
+        from PySide2.QtWidgets import QApplication  # noqa 
     except ImportError:
         return False
     return True
