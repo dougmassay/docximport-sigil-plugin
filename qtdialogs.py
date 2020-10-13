@@ -12,15 +12,15 @@ try:
     from PySide2.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit,
                             QGroupBox,QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy,
                             QDialogButtonBox, QButtonGroup, QStyleFactory)
-    from PySide2.QtGui import QColor, QFont, QPalette
-    from PySide2.QtCore import QCoreApplication, Qt, QByteArray, QTimer, QTranslator, QLibraryInfo
+    from PySide2.QtGui import QColor, QFont, QIcon, QPalette
+    from PySide2.QtCore import QCoreApplication, Qt, QByteArray, QTimer, QTranslator, QLibraryInfo, qVersion
     print('PySide2')
 except ImportError:
     from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit,
                             QGroupBox,QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy,
                             QDialogButtonBox, QButtonGroup, QStyleFactory)
-    from PyQt5.QtGui import QColor, QFont, QPalette
-    from PyQt5.QtCore import QCoreApplication, Qt, QByteArray, QTimer, QTranslator, QLibraryInfo
+    from PyQt5.QtGui import QColor, QFont, QIcon, QPalette
+    from PyQt5.QtCore import QCoreApplication, Qt, QByteArray, QTimer, QTranslator, QLibraryInfo, qVersion
     print('PyQt5')
 
 from updatecheck import UpdateChecker, DOWNLOAD_PAGE
@@ -37,6 +37,10 @@ _DETAILS = {
     'vers'   : '2.0',
 }
 
+
+def tuple_version(v):
+    # No aplha characters in version strings allowed here!
+    return tuple(map(int, (v.split("."))))
 
 def dark_palette(sigil_colors):
     p = QPalette()
@@ -106,7 +110,14 @@ def launch_qt_gui(bk, prefs):
         # Qt 5.10.1 on Linux resets the global font on first event loop tick.
         # So workaround it by setting the font once again in a timer.
         QTimer.singleShot(0, lambda : setup_ui_font(bk._w.uifont))
+
     app = QApplication(sys.argv)
+    icon = os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'plugin.svg')
+    app.setWindowIcon(QIcon(icon))
+
+    if tuple_version(qVersion()) >= (5, 10, 0):
+        app.setAttribute(Qt.AA_DisableWindowContextHelpButton)
+
     # Make plugin match Sigil's light/dark theme
     if supports_theming:
         if bk.colorMode() == "dark":

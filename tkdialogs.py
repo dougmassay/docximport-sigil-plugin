@@ -47,7 +47,7 @@ def launch_tk_gui(bk, prefs):
     root.minsize(420, 400)
     root.option_add('*font', 'Arial -12')
     if not sys.platform.startswith('darwin'):
-        img = tkinter.Image('photo', file=os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'images/icon.png'))
+        img = tkinter.Image('photo', file=os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'icon.png'))
         root.tk.call('wm','iconphoto',root._w,img)
     guiMain(root, bk, prefs).pack(fill=tkinter.constants.BOTH, expand=True)
     root.mainloop()
