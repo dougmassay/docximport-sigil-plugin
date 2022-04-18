@@ -7,7 +7,12 @@ import sys
 import os
 import webbrowser
 
+from plugin_utils import PluginApplication, iswindows, _t as _translate
+from plugin_utils import Qt, QtCore, QtWidgets
 
+from updatecheck import UpdateChecker, DOWNLOAD_PAGE
+
+'''
 try:
     from PySide2.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit,
                             QGroupBox,QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy,
@@ -22,13 +27,8 @@ except ImportError:
     from PyQt5.QtGui import QColor, QFont, QIcon, QPalette
     from PyQt5.QtCore import QCoreApplication, Qt, QByteArray, QTimer, QTranslator, QLibraryInfo, qVersion
     print('PyQt5')
+'''
 
-from updatecheck import UpdateChecker, DOWNLOAD_PAGE
-
-
-_plat = sys.platform.lower()
-iswindows = 'win32' in _plat or 'win64' in _plat
-ismacos = isosx = 'darwin' in _plat
 
 _DETAILS = {
     'docx'   : None,
@@ -38,93 +38,12 @@ _DETAILS = {
 }
 
 
-def tuple_version(v):
-    # No aplha characters in version strings allowed here!
-    return tuple(map(int, (v.split("."))))
-
-def dark_palette(sigil_colors):
-    p = QPalette()
-    dark_color = QColor(sigil_colors("Window"))
-    disabled_color = QColor(127,127,127)
-    dark_link_color = QColor(108, 180, 238)
-    text_color = QColor(sigil_colors("Text"))
-    p.setColor(p.Window, dark_color)
-    p.setColor(p.WindowText, text_color)
-    p.setColor(p.Base, QColor(sigil_colors("Base")))
-    p.setColor(p.AlternateBase, dark_color)
-    p.setColor(p.ToolTipBase, dark_color)
-    p.setColor(p.ToolTipText, text_color)
-    p.setColor(p.Text, text_color)
-    p.setColor(p.Disabled, p.Text, disabled_color)
-    p.setColor(p.Button, dark_color)
-    p.setColor(p.ButtonText, text_color)
-    p.setColor(p.Disabled, p.ButtonText, disabled_color)
-    p.setColor(p.BrightText, Qt.red)
-    p.setColor(p.Link, dark_link_color)
-
-    p.setColor(p.Highlight, QColor(sigil_colors("Highlight")))
-    p.setColor(p.HighlightedText, QColor(sigil_colors("HighlightedText")))
-    p.setColor(p.Disabled, p.HighlightedText, disabled_color)
-
-    return p
-
-
-def setup_highdpi(highdpi):
-    has_env_setting = False
-    env_vars = ('QT_AUTO_SCREEN_SCALE_FACTOR', 'QT_SCALE_FACTOR', 'QT_SCREEN_SCALE_FACTORS', 'QT_DEVICE_PIXEL_RATIO')
-    for v in env_vars:
-        if os.environ.get(v):
-            has_env_setting = True
-            break
-    if highdpi == 'on' or (highdpi == 'detect' and not has_env_setting):
-        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-    elif highdpi == 'off':
-        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, False)
-        for p in env_vars:
-            os.environ.pop(p, None)
-
-def setup_ui_font(font_str):
-    font = QFont()
-    font.fromString(font_str)
-    QApplication.setFont(font)
-
-
-def getQtTranslationsPath(sigil_path):
-    isBundled = 'sigil' in sys.prefix.lower()
-    print('Python is Bundled: {}'.format(isBundled))
-    if isBundled:
-        if sys.platform.lower().startswith('darwin'):
-            return os.path.normpath(sigil_path + '/../translations')
-        else:
-            return os.path.join(sigil_path, 'translations')
-    else:
-        return QLibraryInfo.location(QLibraryInfo.TranslationsPath)
-
-
 def launch_qt_gui(bk, prefs):
-    supports_theming = (bk.launcher_version() >= 20200117)
-    if not ismacos:
-        setup_highdpi(bk._w.highdpi)
-    setup_ui_font(bk._w.uifont)
-    if not ismacos and not iswindows:
-        # Qt 5.10.1 on Linux resets the global font on first event loop tick.
-        # So workaround it by setting the font once again in a timer.
-        QTimer.singleShot(0, lambda : setup_ui_font(bk._w.uifont))
-
-    app = QApplication(sys.argv)
     icon = os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'plugin.svg')
-    app.setWindowIcon(QIcon(icon))
+    mdp = True if iswindows else False
+    app = PluginApplication(sys.argv, bk, app_icon=icon, match_dark_palette=mdp)
 
-    if tuple_version(qVersion()) >= (5, 10, 0):
-        app.setAttribute(Qt.AA_DisableWindowContextHelpButton)
-
-    # Make plugin match Sigil's light/dark theme
-    if supports_theming:
-        if bk.colorMode() == "dark":
-            app.setStyle(QStyleFactory.create("Fusion"))
-            app.setPalette(dark_palette(bk.color))
-
-    print('Application dir: {}'.format(QCoreApplication.applicationDirPath()))
+    '''print('Application dir: {}'.format(QCoreApplication.applicationDirPath()))
     # Install qtbase translator for standard dialogs and such.
     # Use the Sigil language setting unless manually overridden.
     qt_translator = QTranslator()
@@ -138,7 +57,7 @@ def launch_qt_gui(bk, prefs):
     print('Qt translation dir: {}'.format(qt_trans_dir))
     print('Looking for {} in {}'.format(qmf, qt_trans_dir))
     qt_translator.load(qmf, qt_trans_dir)
-    print('Translator succesfully installed: {}'.format(app.installTranslator(qt_translator)))
+    print('Translator succesfully installed: {}'.format(app.installTranslator(qt_translator)))'''
 
     ex = App(bk, prefs)
     ex.show()
@@ -146,10 +65,7 @@ def launch_qt_gui(bk, prefs):
     return _DETAILS
 
 
-_translate = QCoreApplication.translate
-
-
-class App(QWidget):
+class App(QtWidgets.QWidget):
     def __init__(self, bk, prefs):
         super().__init__()
 
@@ -157,7 +73,7 @@ class App(QWidget):
         self.prefs = prefs
         self.update = False
 
-        # Install translator for the DOCXImport plugin dialog.
+        '''# Install translator for the DOCXImport plugin dialog.
         # Use the Sigil language setting unless manually overridden.
         plugin_translator = QTranslator()
         if prefs['language_override'] is not None:
@@ -167,7 +83,7 @@ class App(QWidget):
             qmf = '{}_{}'.format(bk._w.plugin_name.lower(), bk.sigil_ui_lang)
         print(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'translations'))
         plugin_translator.load(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'translations'))
-        print(QCoreApplication.instance().installTranslator(plugin_translator))
+        print(QCoreApplication.instance().installTranslator(plugin_translator))'''
 
         self._ok_to_close = False
 
@@ -195,14 +111,14 @@ class App(QWidget):
         self.initUI()
 
     def initUI(self):
-        main_layout = QVBoxLayout(self)
+        main_layout = QtWidgets.QVBoxLayout(self)
 
         self.setWindowTitle('DOCXImport')
-        self.upd_layout = QVBoxLayout()
-        self.update_label = QLabel()
+        self.upd_layout = QtWidgets.QVBoxLayout()
+        self.update_label = QtWidgets.QLabel()
         self.update_label.setAlignment(Qt.AlignCenter)
         self.upd_layout.addWidget(self.update_label)
-        self.get_update_button = QPushButton()
+        self.get_update_button = QtWidgets.QPushButton()
         self.get_update_button.clicked.connect(self.get_update)
         self.upd_layout.addWidget(self.get_update_button)
         main_layout.addLayout(self.upd_layout)
@@ -210,15 +126,15 @@ class App(QWidget):
             self.update_label.hide()
             self.get_update_button.hide()
 
-        self.details_grid = QGridLayout()
-        self.epub2_select = QRadioButton()
+        self.details_grid = QtWidgets.QGridLayout()
+        self.epub2_select = QtWidgets.QRadioButton()
         self.epub2_select.setText('EPUB2')
-        self.epubType = QButtonGroup()
+        self.epubType = QtWidgets.QButtonGroup()
         self.epubType.addButton(self.epub2_select)
         self.details_grid.addWidget(self.epub2_select, 0, 0, 1, 1)
-        self.checkbox_get_updates = QCheckBox()
+        self.checkbox_get_updates = QtWidgets.QCheckBox()
         self.details_grid.addWidget(self.checkbox_get_updates, 0, 1, 1, 1)
-        self.epub3_select = QRadioButton()
+        self.epub3_select = QtWidgets.QRadioButton()
         self.epub3_select.setText('EPUB3')
         self.epubType.addButton(self.epub3_select)
         self.details_grid.addWidget(self.epub3_select, 1, 0, 1, 1)
@@ -231,15 +147,15 @@ class App(QWidget):
         else:
             self.epub2_select.setChecked(True)
 
-        self.groupBox = QGroupBox()
+        self.groupBox = QtWidgets.QGroupBox()
         self.groupBox.setTitle('')
-        self.verticalLayout_2 = QVBoxLayout(self.groupBox)
-        self.docx_grid = QGridLayout()
-        self.docx_label = QLabel()
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.groupBox)
+        self.docx_grid = QtWidgets.QGridLayout()
+        self.docx_label = QtWidgets.QLabel()
         self.docx_grid.addWidget(self.docx_label, 0, 0, 1, 1)
-        self.docx_path = QLineEdit()
+        self.docx_path = QtWidgets.QLineEdit()
         self.docx_grid.addWidget(self.docx_path, 1, 0, 1, 1)
-        self.choose_docx_button = QPushButton()
+        self.choose_docx_button = QtWidgets.QPushButton()
         self.choose_docx_button.setText('...')
         self.docx_grid.addWidget(self.choose_docx_button, 1, 1, 1, 1)
         self.verticalLayout_2.addLayout(self.docx_grid)
@@ -248,12 +164,12 @@ class App(QWidget):
             self.docx_path.setText(self.prefs['lastDocxPath'])
         self.docx_path.setEnabled(False)
 
-        self.smap_grid = QGridLayout()
-        self.checkbox_smap = QCheckBox(self.groupBox)
+        self.smap_grid = QtWidgets.QGridLayout()
+        self.checkbox_smap = QtWidgets.QCheckBox(self.groupBox)
         self.smap_grid.addWidget(self.checkbox_smap, 0, 0, 1, 1)
-        self.cust_smap_path = QLineEdit(self.groupBox)
+        self.cust_smap_path = QtWidgets.QLineEdit(self.groupBox)
         self.smap_grid.addWidget(self.cust_smap_path, 1, 0, 1, 1)
-        self.choose_smap_button = QPushButton(self.groupBox)
+        self.choose_smap_button = QtWidgets.QPushButton(self.groupBox)
         self.choose_smap_button.setText('...')
         self.smap_grid.addWidget(self.choose_smap_button, 1, 1, 1, 1)
         self.verticalLayout_2.addLayout(self.smap_grid)
@@ -265,12 +181,12 @@ class App(QWidget):
         self.cust_smap_path.setEnabled(False)
         self.chkBoxActions(self.checkbox_smap, self.choose_smap_button)
 
-        self.css_grid = QGridLayout()
-        self.checkbox_css = QCheckBox(self.groupBox)
+        self.css_grid = QtWidgets.QGridLayout()
+        self.checkbox_css = QtWidgets.QCheckBox(self.groupBox)
         self.css_grid.addWidget(self.checkbox_css, 0, 0, 1, 1)
-        self.cust_css_path = QLineEdit(self.groupBox)
+        self.cust_css_path = QtWidgets.QLineEdit(self.groupBox)
         self.css_grid.addWidget(self.cust_css_path, 1, 0, 1, 1)
-        self.choose_css_button = QPushButton(self.groupBox)
+        self.choose_css_button = QtWidgets.QPushButton(self.groupBox)
         self.choose_css_button.setText('...')
         self.css_grid.addWidget(self.choose_css_button, 1, 1, 1, 1)
         self.verticalLayout_2.addLayout(self.css_grid)
@@ -283,21 +199,21 @@ class App(QWidget):
         self.chkBoxActions(self.checkbox_css, self.choose_css_button)
 
         main_layout.addWidget(self.groupBox)
-        self.checkbox_debug = QCheckBox()
+        self.checkbox_debug = QtWidgets.QCheckBox()
         main_layout.addWidget(self.checkbox_debug)
         self.checkbox_debug.setChecked(self.prefs['debug'])
 
-        spacerItem = QSpacerItem(20, 15, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(20, 15, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         main_layout.addItem(spacerItem)
 
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         button_box.accepted.connect(self._ok_clicked)
         button_box.rejected.connect(self._cancel_clicked)
         main_layout.addWidget(button_box)
         self.retranslateUi(self)
         if self.prefs['qt_geometry'] is not None:
             try:
-                self.restoreGeometry(QByteArray.fromHex(self.prefs['qt_geometry'].encode('ascii')))
+                self.restoreGeometry(Qt.Core.QByteArray.fromHex(self.prefs['qt_geometry'].encode('ascii')))
             except Exception:
                 pass
         self.show()
@@ -312,12 +228,12 @@ class App(QWidget):
         self.checkbox_debug.setText(_translate('App', 'Debug Mode (change takes effect next plugin run)'))
 
     def fileChooser(self, ftype, qlineedit, qcheck=None, qbutton=None):
-        options =  QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
+        options =  QtWidgets.QFileDialog.Options()
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
         title = self.FTYPE_MAP[ftype]['title']
         startfolder = self.prefs['lastDir'][ftype]
         ffilter = self.FTYPE_MAP[ftype]['filetypes']
-        inpath, _ = QFileDialog.getOpenFileName(self, title, startfolder, ffilter, options=options)
+        inpath, _ = QtWidgets.QFileDialog.getOpenFileName(self, title, startfolder, ffilter, options=options)
         if len(inpath):
             qlineedit.setEnabled(True)
             qlineedit.setText(os.path.normpath(inpath))
@@ -385,7 +301,7 @@ class App(QWidget):
         self._ok_to_close = True
         self.cmdDo()
         self.bk.savePrefs(self.prefs)
-        QCoreApplication.instance().quit()
+        QtCore.QCoreApplication.instance().quit()
 
     def _cancel_clicked(self):
         self._ok_to_close = True
@@ -394,7 +310,7 @@ class App(QWidget):
         self.prefs['check_for_updates'] = self.checkbox_get_updates.isChecked()
         self.prefs['debug'] = self.checkbox_debug.isChecked()
         self.bk.savePrefs(self.prefs)
-        QCoreApplication.instance().quit()
+        QtCore.QCoreApplication.instance().quit()
 
     def closeEvent(self, event):
         if self._ok_to_close:

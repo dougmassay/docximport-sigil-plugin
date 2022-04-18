@@ -32,7 +32,8 @@ PLUGIN_FILES = ['mmth',
             'plugin.svg',
             'plugin.png',
             'tkdialogs.py',
-            'updatecheck.py']
+            'updatecheck.py',
+            'plugin_utils.py']
 
 def findVersion():
     _version_pattern = re.compile(r'<version>([^<]*)</version>')
