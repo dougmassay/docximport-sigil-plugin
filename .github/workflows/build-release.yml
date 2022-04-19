@@ -1,5 +1,5 @@
 
-name: Build and Release KindleImport plugin
+name: Build and Release DOCXImport plugin
 
 on:
   push:
@@ -43,9 +43,6 @@ jobs:
 
     - name: Build Plugin
       run: |
-        cd ./setup_tools
-        python getkucore.py
-        cd ../
         python buildplugin
 
     - name: Upload Artifact
