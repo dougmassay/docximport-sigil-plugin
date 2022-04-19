@@ -1,0 +1,71 @@
+
+name: Build and Release KindleImport plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+env:
+  PLUGIN_NAME: "DOCXImport"
+
+jobs:
+  build:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Get tag name
+      if: startswith( github.ref, 'refs/tags/')
+      id: get_tag_name
+      run: echo ::set-output name=TAGNAME::${GITHUB_REF/refs\/tags\//}
+
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8
+
+    - name: Lint with flake8
+      run: |
+        flake8 buildplugin
+        flake8 .
+
+    - name: Build Plugin
+      run: |
+        cd ./setup_tools
+        python getkucore.py
+        cd ../
+        python buildplugin
+
+    - name: Upload Artifact
+      if: "contains(github.event.head_commit.message, '[deploy]')"
+      uses: actions/upload-artifact@v2
+      with:
+        name: docximport-artifact
+        path: ./*.zip
+        retention-days: 3
+
+    - name: Create Release
+      if: startswith( github.ref, 'refs/tags/')
+      uses: ncipollo/release-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        name: ${{ env.PLUGIN_NAME }} ${{ steps.get_tag_name.outputs.TAGNAME }}
+        body: |
+          Changes in this Release
+          - First Change
+          - Second Change
+        draft: true
+        prerelease: false
+        artifacts: './*.zip'
