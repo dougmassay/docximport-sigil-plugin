@@ -12,23 +12,6 @@ from plugin_utils import Qt, QtCore, QtWidgets
 
 from updatecheck import UpdateChecker, DOWNLOAD_PAGE
 
-'''
-try:
-    from PySide2.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit,
-                            QGroupBox,QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy,
-                            QDialogButtonBox, QButtonGroup, QStyleFactory)
-    from PySide2.QtGui import QColor, QFont, QIcon, QPalette
-    from PySide2.QtCore import QCoreApplication, Qt, QByteArray, QTimer, QTranslator, QLibraryInfo, qVersion
-    print('PySide2')
-except ImportError:
-    from PyQt5.QtWidgets import (QApplication, QWidget, QFileDialog, QPushButton, QLabel, QCheckBox, QLineEdit,
-                            QGroupBox,QVBoxLayout, QGridLayout, QRadioButton, QSpacerItem, QSizePolicy,
-                            QDialogButtonBox, QButtonGroup, QStyleFactory)
-    from PyQt5.QtGui import QColor, QFont, QIcon, QPalette
-    from PyQt5.QtCore import QCoreApplication, Qt, QByteArray, QTimer, QTranslator, QLibraryInfo, qVersion
-    print('PyQt5')
-'''
-
 
 _DETAILS = {
     'docx'   : None,
@@ -43,22 +26,6 @@ def launch_qt_gui(bk, prefs):
     mdp = True if iswindows else False
     app = PluginApplication(sys.argv, bk, app_icon=icon, match_dark_palette=mdp)
 
-    '''print('Application dir: {}'.format(QCoreApplication.applicationDirPath()))
-    # Install qtbase translator for standard dialogs and such.
-    # Use the Sigil language setting unless manually overridden.
-    qt_translator = QTranslator()
-    if prefs['language_override'] is not None:
-        print('Plugin preferences language override in effect')
-        qmf = 'qtbase_{}'.format(prefs['language_override'])
-    else:
-        qmf = 'qtbase_{}'.format(bk.sigil_ui_lang)
-    # Get bundled or external translations directory
-    qt_trans_dir = getQtTranslationsPath(bk._w.appdir)
-    print('Qt translation dir: {}'.format(qt_trans_dir))
-    print('Looking for {} in {}'.format(qmf, qt_trans_dir))
-    qt_translator.load(qmf, qt_trans_dir)
-    print('Translator succesfully installed: {}'.format(app.installTranslator(qt_translator)))'''
-
     ex = App(bk, prefs)
     ex.show()
     app.exec_()
@@ -72,18 +39,6 @@ class App(QtWidgets.QWidget):
         self.bk = bk
         self.prefs = prefs
         self.update = False
-
-        '''# Install translator for the DOCXImport plugin dialog.
-        # Use the Sigil language setting unless manually overridden.
-        plugin_translator = QTranslator()
-        if prefs['language_override'] is not None:
-            print('Plugin preferences language override in effect')
-            qmf = '{}_{}'.format(bk._w.plugin_name.lower(), prefs['language_override'])
-        else:
-            qmf = '{}_{}'.format(bk._w.plugin_name.lower(), bk.sigil_ui_lang)
-        print(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'translations'))
-        plugin_translator.load(qmf, os.path.join(bk._w.plugin_dir, bk._w.plugin_name, 'translations'))
-        print(QCoreApplication.instance().installTranslator(plugin_translator))'''
 
         self._ok_to_close = False
 
@@ -213,7 +168,7 @@ class App(QtWidgets.QWidget):
         self.retranslateUi(self)
         if self.prefs['qt_geometry'] is not None:
             try:
-                self.restoreGeometry(Qt.Core.QByteArray.fromHex(self.prefs['qt_geometry'].encode('ascii')))
+                self.restoreGeometry(QtCore.QByteArray.fromHex(self.prefs['qt_geometry'].encode('ascii')))
             except Exception:
                 pass
         self.show()

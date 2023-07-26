@@ -31,7 +31,6 @@ PLUGIN_FILES = ['mmth',
             'quickepub.py',
             'plugin.svg',
             'plugin.png',
-            'tkdialogs.py',
             'updatecheck.py',
             'plugin_utils.py']
 

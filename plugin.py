@@ -30,19 +30,6 @@ _img_extensions = {
 prefs = {}
 img_map = None
 
-def pyqt_available():
-    try:
-        from PyQt5.QtWidgets import QApplication  # noqa 
-    except ImportError:
-        return False
-    return True
-
-def pyside_available():
-    try:
-        from PySide2.QtWidgets import QApplication  # noqa 
-    except ImportError:
-        return False
-    return True
 
 class ImageWriter(object):
     def __init__(self, output_dir):
@@ -89,17 +76,14 @@ def run(bk):
     global img_map
     global _DEBUG_
 
-    # Use Qt interface if Sigil >= v0.9.8 and/or PyQt5 is available
-    supports_pyqt = (bk.launcher_version() >= 20170115)
-    if supports_pyqt:
-        try:
-            from qtdialogs import launch_qt_gui as launch_gui
-        except ImportError:  # Using an external python that doeesn't have PyQt5
-            from tkdialogs import launch_tk_gui as launch_gui
-        else:
-            from qtdialogs import launch_qt_gui as launch_gui
+    # Use Qt interface if Sigil >= v0.9.8
+    supports_qt = (bk.launcher_version() >= 20170115)
+    if supports_qt:
+        from qtdialogs import launch_qt_gui as launch_gui
     else:
-        from tkdialogs import launch_tk_gui as launch_gui
+        # No longer supports tkinter as of docximport v0.3.0
+        print('Only compatible with Sigil v0.9.8+')
+        return 0
 
     prefs = bk.getPrefs()
 
