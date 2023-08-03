@@ -53,7 +53,7 @@ jobs:
         commit_user_name: GitHub Actions Bot
         commit_user_email: actions-bot@example.org
         commit_author: Doug Massay <dougmassay@users.noreply.github.com>
-        commit_message: Update TS files with 5.12 lupdate
+        commit_message: Update TS files with 5.12 lupdate [skip ci]
 
     - name: Cache Qt
       id: cache-qt
