@@ -35,15 +35,45 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install flake8
+        pip install PyQt5==5.12.3
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Lint with flake8
       run: |
         flake8 buildplugin
         flake8 .
 
+    - name: Update language files
+      run: |
+        pylupdate5 -verbose -translate-function _t *.py -ts ./translations/template.ts
+  
+    - name: Commit any language TS files updated
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_user_name: GitHub Actions Bot
+        commit_user_email: actions-bot@example.org
+        commit_author: Doug Massay <dougmassay@users.noreply.github.com>
+        commit_message: Update TS files with 5.12 lupdate
+
+    - name: Cache Qt
+      id: cache-qt
+      uses: actions/cache@v3
+      with:
+        path: ${{runner.workspace}}/Qt
+        key: ${{ runner.os }}-qttools-${{ hashFiles('**/reset-caches.txt') }}
+  
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '5.12.3'
+        dir: ${{runner.workspace}}/Qt
+        setup-python: 'false'
+        archives: 'qtbase qttools icu'
+        cache: ${{ steps.cache-qt.outputs.cache-hit }}
+
     - name: Build Plugin
       run: |
-        python buildplugin
+        python buildplugin --language
 
     - name: Upload Artifact
       if: "contains(github.event.head_commit.message, '[deploy]')"
