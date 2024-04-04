@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Get tag name
       if: startswith( github.ref, 'refs/tags/')
@@ -27,7 +27,7 @@ jobs:
       run: echo "TAGNAME=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
     - name: Set up Python 3.8
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.8
 
@@ -48,7 +48,7 @@ jobs:
         pylupdate5 -verbose -translate-function _t *.py -ts ./translations/template.ts
   
     - name: Commit any language TS files updated
-      uses: stefanzweifel/git-auto-commit-action@v4
+      uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_user_name: GitHub Actions Bot
         commit_user_email: actions-bot@example.org
@@ -57,7 +57,7 @@ jobs:
 
     - name: Cache Qt
       id: cache-qt
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{runner.workspace}}/Qt
         key: ${{ runner.os }}-qttools-${{ hashFiles('**/reset-caches.txt') }}
@@ -77,7 +77,7 @@ jobs:
 
     - name: Upload Artifact
       if: "contains(github.event.head_commit.message, '[deploy]')"
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docximport-artifact
         path: ./*.zip
