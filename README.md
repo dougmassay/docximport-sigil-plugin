@@ -41,7 +41,25 @@ Linux users will have to make sure that the Tk or PyQt5 graphical python module 
 This plugin will work with either Python 3.4+.
 The absolute minimum version of Sigil required is v0.8.3 (Python must be installed separately prior to v0.9.0)
 
-Get more help at the DOCXImport plugin [MobileRead support thread.](http://www.mobileread.com/forums/showthread.php?t=273966)
+To use the plugin:
+
+1. Install it: In Sigil, choose **Plugins > Manage Plugins**, then click **Add Plugin**, then navigate to the zip file for this plugin.
+
+2. Start the plugin by choosing **Plugins > Input > DocXImport**.
+
+3. Select whether to generate EPUB2 or EPUB3.
+
+4. Use the first **...** button to navigate to a DOCX file.
+
+5. Optionally, select a custom style map and/or custom CSS file.
+
+6. Click **OK**.
+
+The plugin runs, converting the DOCX file into an ePub. The resulting ePub has only one section; to
+break it up into multiple sections, use Sigil's **Edit > Split At Cursor** or
+**Insert > Split Marker** commands.
+
+For more help, see the DOCXImport plugin [MobileRead support thread](http://www.mobileread.com/forums/showthread.php?t=273966).
 
 A sample docx file (along with a sample mammoth style map and css file) are available in the samples folder of the github reppository. For more help with custom style maps, check out the "Writing Style Maps" section of the [Mammoth README.](https://github.com/mwilliamson/python-mammoth#writing-style-maps)
 
